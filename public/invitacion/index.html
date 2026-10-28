@@ -9,7 +9,7 @@
 <script>ChessiaAuth.guard();</script>
 <meta name="theme-color" content="#060d17" />
 <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@400;600;700&family=Montserrat:wght@800&display=swap" rel="stylesheet" />
 <style>
 :root{--g:#00E676;--c:#00D2FF;--bg:#060d17;--mut:#8892B0}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -58,14 +58,12 @@ input[type=range]{flex:1;accent-color:var(--g)}
 <main>
 <header><div class="brand">CHESS<b>IA</b></div><div class="nav"><a class="back" href="../marco/">📷 FOTO</a><a class="back" href="/" onclick="ChessiaAuth.logout()">🔒 SALIR</a></div></header>
 <h1>Invitaciones</h1>
-<p class="sub">Escribe el nombre, se coloca en la plantilla del torneo y la mandas por WhatsApp. Todo se hace en tu dispositivo.</p>
+<p class="sub">Escribe el nombre: se coloca sobre la raya turquesa de la invitación y la mandas por WhatsApp. Todo se hace en tu dispositivo.</p>
 
 <section class="card">
   <div class="step"><i>1</i> NOMBRE</div>
   <label class="fld" for="name">¿A quién invitamos?</label>
   <input class="in" id="name" type="text" autocomplete="off" placeholder="Ej: Carlos Suárez" maxlength="48" />
-  <label class="fld" for="tone">Tratamiento</label>
-  <select class="in" id="tone" style="font:700 14px 'Space Grotesk',sans-serif"><option value="ESTÁS INVITADO/A">Estás invitado/a</option><option value="ESTÁS INVITADO">Estás invitado</option><option value="ESTÁS INVITADA">Estás invitada</option><option value="ESTÁN INVITADOS">Están invitados</option></select>
 </section>
 
 <section class="card">
@@ -82,7 +80,7 @@ input[type=range]{flex:1;accent-color:var(--g)}
       <select class="in" id="tcolor" style="width:auto;padding:8px;font:700 12px 'JetBrains Mono',monospace"><option value="#ffffff">Blanco</option><option value="#0b1523">Negro</option><option value="#f5b700">Dorado</option><option value="#00E676">Verde</option></select></div>
     <p class="hint">Arrastra el nombre sobre la imagen para ponerlo donde quieras.</p>
   </div>
-  <div class="status" id="tplStatus">✓ Plantilla oficial Humano vs. IA</div>
+  <div class="status" id="tplStatus">✓ Invitación oficial CHESSIA</div>
 </section>
 
 <section class="card">
@@ -110,12 +108,13 @@ input[type=range]{flex:1;accent-color:var(--g)}
 (() => {
   const $ = id => document.getElementById(id);
   const cv = $('cv'), ctx = cv.getContext('2d');
-  const W = 1080, H = 1350, WIN = { x: 60, y: 295, w: 960, h: 580 };   // ventana transparente del marco oficial
+  const NAME = { cx: 1462, base: 429, maxW: 780, color: '#3DDAA7' };    // posición del nombre sobre la raya turquesa (plantilla 2000×1414)
   const GROUP = 'https://chat.whatsapp.com/F3FbfRMJ5kp3J3zHkbCEII?mode=gi_t';
-  let frame = null, tpl = null, mode = 'official';
+  let official = null, tpl = null, mode = 'official';
   const pos = { x: 0.5, y: 0.5 };                                      // nombre en plantilla propia (fracción)
 
-  const titleCase = s => s.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+  const PART = new Set(['de', 'del', 'la', 'las', 'los', 'y', 'e', 'da', 'do', 'di', 'van', 'von']);
+  const titleCase = s => s.trim().replace(/\s+/g, ' ').toLowerCase().split(' ').map((w, i) => (i > 0 && PART.has(w)) ? w : w.replace(/(^|[-'])(\p{L})/gu, (m, a, b) => a + b.toUpperCase())).join(' ');
   const getName = () => titleCase($('name').value) || 'Nombre Apellido';
 
   async function load(file) {
@@ -138,51 +137,24 @@ input[type=range]{flex:1;accent-color:var(--g)}
     return { lines: best.filter(Boolean), size };
   }
 
-  function drawOfficialPanel() {
-    const { x, y, w, h } = WIN;
-    ctx.save(); ctx.beginPath(); ctx.rect(x - 4, y - 4, w + 8, h + 8); ctx.clip();
-    const g = ctx.createLinearGradient(x, y, x + w, y + h); g.addColorStop(0, '#04122b'); g.addColorStop(.55, '#0a2a66'); g.addColorStop(1, '#06142e');
-    ctx.fillStyle = g; ctx.fillRect(x - 4, y - 4, w + 8, h + 8);
-    const r1 = ctx.createRadialGradient(x + w * .82, y + h * .2, 10, x + w * .82, y + h * .2, 420); r1.addColorStop(0, 'rgba(0,210,255,.35)'); r1.addColorStop(1, 'rgba(0,210,255,0)'); ctx.fillStyle = r1; ctx.fillRect(x, y, w, h);
-    const r2 = ctx.createRadialGradient(x + w * .1, y + h * .95, 10, x + w * .1, y + h * .95, 380); r2.addColorStop(0, 'rgba(0,230,118,.30)'); r2.addColorStop(1, 'rgba(0,230,118,0)'); ctx.fillStyle = r2; ctx.fillRect(x, y, w, h);
-    ctx.strokeStyle = 'rgba(0,210,255,.10)'; ctx.lineWidth = 1;
-    for (let gx = x; gx < x + w; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); ctx.stroke(); }
-    for (let gy = y; gy < y + h; gy += 40) { ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); ctx.stroke(); }
-    ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.font = '300px serif'; ctx.textAlign = 'center';
-    ctx.fillText('♞', x + 150, y + h - 30); ctx.fillText('♜', x + w - 130, y + 270);
-    ctx.fillStyle = 'rgba(0,230,118,.09)'; ctx.fillText('♟', x + w - 150, y + h - 30);
-    ctx.restore();
-
-    const cx = x + w / 2;
+  function drawOfficialName() {
+    const text = getName(), fam = '"Montserrat","Space Grotesk",sans-serif';
+    let size = 58; ctx.font = `800 ${size}px ${fam}`;
+    while (ctx.measureText(text).width > NAME.maxW && size > 30) { size -= 2; ctx.font = `800 ${size}px ${fam}`; }
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#00D2FF'; ctx.font = '700 25px "JetBrains Mono",monospace';
-    ctx.fillText('★  INVITACIÓN ESPECIAL  ★', cx, y + 70);
-    ctx.fillStyle = '#ffffff'; ctx.font = '800 54px "Space Grotesk",sans-serif';
-    ctx.fillText($('tone').value, cx, y + 140);
-    // nombre
-    const { lines, size } = nameLines(getName(), w - 90, 112);
-    const gold = ctx.createLinearGradient(x, 0, x + w, 0); gold.addColorStop(0, '#00E676'); gold.addColorStop(1, '#00D2FF');
-    ctx.fillStyle = gold; ctx.font = `800 ${size}px "Space Grotesk",sans-serif`;
-    ctx.shadowColor = 'rgba(0,230,118,.55)'; ctx.shadowBlur = 24;
-    const lh = size * 1.05, baseY = y + 270 + (lines.length === 1 ? 20 : -6);
-    lines.forEach((ln, i) => ctx.fillText(ln, cx, baseY + i * lh));
-    ctx.shadowBlur = 0;
-    const by = baseY + (lines.length - 1) * lh;
-    ctx.strokeStyle = 'rgba(0,210,255,.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(cx - 190, by + 34); ctx.lineTo(cx + 190, by + 34); ctx.stroke();
-    ctx.fillStyle = '#e8f1ff'; ctx.font = '700 36px "Space Grotesk",sans-serif';
-    ctx.fillText('al torneo HUMANO vs. IA', cx, by + 92);
-    ctx.fillStyle = '#9fd8ff'; ctx.font = '500 26px "Space Grotesk",sans-serif';
-    ctx.fillText('con Turing y el brazo Dobot CR5', cx, by + 134);
-    ctx.textAlign = 'left';
+    ctx.shadowColor = 'rgba(61,218,167,.55)'; ctx.shadowBlur = 14;
+    ctx.fillStyle = NAME.color; ctx.fillText(text, NAME.cx, NAME.base);
+    ctx.shadowBlur = 0; ctx.textAlign = 'left';
   }
 
   function draw() {
     ctx.clearRect(0, 0, cv.width, cv.height);
     if (mode === 'official') {
-      cv.width = W; cv.height = H;
-      ctx.fillStyle = '#0a1a3a'; ctx.fillRect(0, 0, W, H);
-      drawOfficialPanel();
-      if (frame) ctx.drawImage(frame, 0, 0, W, H);
+      if (official) {
+        cv.width = official.width || official.naturalWidth; cv.height = official.height || official.naturalHeight;
+        ctx.drawImage(official, 0, 0);
+        drawOfficialName();
+      } else { cv.width = 1000; cv.height = 700; ctx.fillStyle = '#0a1a3a'; ctx.fillRect(0, 0, 1000, 700); ctx.fillStyle = '#8892B0'; ctx.font = '600 28px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('Cargando plantilla…', 500, 350); ctx.textAlign = 'left'; }
     } else {
       if (tpl) {
         const sw = tpl.width || tpl.naturalWidth, sh = tpl.height || tpl.naturalHeight, k = Math.min(1, 1600 / Math.max(sw, sh));
@@ -195,7 +167,7 @@ input[type=range]{flex:1;accent-color:var(--g)}
         const lh = size * 1.05, cy = pos.y * cv.height - ((lines.length - 1) * lh) / 2;
         lines.forEach((ln, i) => ctx.fillText(ln, pos.x * cv.width, cy + i * lh + size * 0.35));
         ctx.shadowBlur = 0; ctx.textAlign = 'left';
-      } else { cv.width = W; cv.height = H; ctx.fillStyle = '#0a1a3a'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#8892B0'; ctx.font = '600 34px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('Carga tu plantilla para empezar', W / 2, H / 2); ctx.textAlign = 'left'; }
+      } else { cv.width = 1000; cv.height = 700; ctx.fillStyle = '#0a1a3a'; ctx.fillRect(0, 0, 1000, 700); ctx.fillStyle = '#8892B0'; ctx.font = '600 30px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('Carga tu plantilla para empezar', 500, 350); ctx.textAlign = 'left'; }
     }
     updMsg();
   }
@@ -204,16 +176,16 @@ input[type=range]{flex:1;accent-color:var(--g)}
   let msgTouched = false;
   function defaultMsg() {
     const n = ($('name').value.trim() ? titleCase($('name').value).split(' ')[0] : '');
-    return `¡Hola${n ? ' ' + n : ''}! 👋 Te invitamos al torneo HUMANO vs. IA ♟️🤖\n28 y 29 de octubre · Paraninfo Universitario UAGRM.\n\n👉 Únete al grupo oficial de WhatsApp:\n${GROUP}\n\n🔥 Juega tú también: https://chessia-tau.vercel.app`;
+    return `¡Hola${n ? ' ' + n : ''}! 👋 Te invitamos a la demostración de CHESSIA: HUMANO vs. IA ♟️🤖\n28 y 29 de octubre · Paraninfo Universitario UAGRM.\n\n👉 Únete al grupo oficial de WhatsApp:\n${GROUP}\n\n🔥 Juega tú también: https://chessia-tau.vercel.app`;
   }
   function updMsg() { if (!msgTouched) $('msg').value = defaultMsg(); }
   $('msg').addEventListener('input', () => { msgTouched = true; });
 
-  $('name').addEventListener('input', draw); $('tone').addEventListener('change', draw);
+  $('name').addEventListener('input', draw);
   $('tsize').addEventListener('input', draw); $('tcolor').addEventListener('change', draw);
   document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', () => {
     mode = document.querySelector('input[name=mode]:checked').value; $('custom').style.display = mode === 'custom' ? 'block' : 'none';
-    $('tplStatus').textContent = mode === 'official' ? '✓ Plantilla oficial Humano vs. IA' : (tpl ? '✓ Tu plantilla' : 'Carga tu plantilla'); draw();
+    $('tplStatus').textContent = mode === 'official' ? '✓ Invitación oficial CHESSIA' : (tpl ? '✓ Tu plantilla' : 'Carga tu plantilla'); draw();
   }));
   $('tplIn').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; try { tpl = await load(f); $('tplStatus').textContent = '✓ ' + f.name; pos.x = .5; pos.y = .5; draw(); } catch (er) { $('tplStatus').textContent = '⚠ No se pudo leer esa imagen'; } });
   // arrastrar nombre en plantilla propia
@@ -262,10 +234,10 @@ input[type=range]{flex:1;accent-color:var(--g)}
     setTimeout(() => { location.href = url; }, 900);
   });
 
-  // arranque: marco oficial + fuentes antes de dibujar
+  // arranque: plantilla oficial + fuentes antes de dibujar
   (async () => {
-    try { const r = await fetch('../marco/marco-chessia.webp', { cache: 'force-cache' }); frame = await load(await r.blob()); } catch (e) { $('tplStatus').textContent = '⚠ No se pudo cargar el marco oficial'; }
-    try { await Promise.all([document.fonts.load('800 60px "Space Grotesk"'), document.fonts.load('700 25px "JetBrains Mono"')]); } catch (e) {}
+    try { const r = await fetch('plantilla.webp', { cache: 'force-cache' }); official = await load(await r.blob()); } catch (e) { $('tplStatus').textContent = '⚠ No se pudo cargar la plantilla oficial'; }
+    try { await Promise.all([document.fonts.load('800 60px "Montserrat"'), document.fonts.load('800 60px "Space Grotesk"')]); } catch (e) {}
     draw();
   })();
   draw();
