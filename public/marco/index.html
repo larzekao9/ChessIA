@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Marco de fotos · ChessIA</title>
+<meta name="description" content="Pon el marco de ChessIA a cualquier foto y descárgala lista para compartir por WhatsApp." />
+<meta name="theme-color" content="#060d17" />
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{--g:#00E676;--c:#00D2FF;--bg:#060d17;--card:#0b1523;--mut:#8892B0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:var(--bg);color:#e8eef7;font-family:"Space Grotesk",system-ui,sans-serif;
+ background-image:radial-gradient(ellipse at 50% 0%,rgba(0,210,255,.1),transparent 60%),linear-gradient(to right,rgba(0,210,255,.04) 1px,transparent 1px),linear-gradient(to bottom,rgba(0,210,255,.04) 1px,transparent 1px);background-size:100% 100%,28px 28px,28px 28px;
+ padding:0 16px calc(24px + env(safe-area-inset-bottom))}
+main{max-width:520px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 8px}
+.brand{font:800 18px "JetBrains Mono",monospace;letter-spacing:.08em}.brand b{color:var(--g)}
+.back{font:700 11px "JetBrains Mono",monospace;color:var(--c);text-decoration:none;border:1px solid rgba(0,210,255,.4);border-radius:999px;padding:6px 12px}
+h1{font:800 22px "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 2px}
+.sub{color:var(--mut);font-size:13px;margin:0 0 14px}
+.card{background:rgba(11,21,35,.85);border:1px solid rgba(0,210,255,.22);border-radius:16px;padding:14px;margin-bottom:12px}
+.step{display:flex;align-items:center;gap:8px;font:800 11px "JetBrains Mono",monospace;letter-spacing:.14em;color:var(--c);margin-bottom:10px}
+.step i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--g);color:#04200f;font-style:normal}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{appearance:none;border:0;cursor:pointer;font:800 12px "JetBrains Mono",monospace;letter-spacing:.04em;text-transform:uppercase;border-radius:12px;padding:12px 14px;color:#04200f;background:var(--g);box-shadow:0 4px 18px rgba(0,230,118,.4);text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:active{transform:scale(.96)}
+.btn.sec{background:#102236;color:var(--c);border:1px solid rgba(0,210,255,.4);box-shadow:none}
+.btn.wa{background:#25D366}
+.btn[disabled]{opacity:.4;pointer-events:none;box-shadow:none}
+.grow{flex:1 1 140px}
+input[type=file]{display:none}
+.hint{font-size:12px;color:var(--mut);margin:8px 0 0}
+.status{font:600 11px "JetBrains Mono",monospace;color:var(--g);margin-top:8px;min-height:14px}
+.stage{position:relative;border-radius:14px;overflow:hidden;border:1px solid rgba(0,230,118,.45);box-shadow:0 0 28px rgba(0,230,118,.2);
+ background:conic-gradient(#0d1b2c 25%,#102236 0 50%,#0d1b2c 0 75%,#102236 0) 0 0/24px 24px;touch-action:none}
+canvas{display:block;width:100%;height:auto;cursor:grab}
+canvas:active{cursor:grabbing}
+.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--mut);font:600 12px "JetBrains Mono",monospace;padding:20px;pointer-events:none}
+label.sl{display:flex;align-items:center;gap:10px;font:700 11px "JetBrains Mono",monospace;color:var(--c);margin-top:12px}
+input[type=range]{flex:1;accent-color:var(--g)}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:10px;color:#cfd8e6}
+select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-radius:10px;padding:8px;font:600 12px "JetBrains Mono",monospace}
+</style>
+</head>
+<body>
+<main>
+<header><div class="brand">CHESS<b>IA</b></div><a class="back" href="/">← LANDING</a></header>
+<h1>Marco de fotos</h1>
+<p class="sub">Carga el marco, carga la foto, ajústala y descarga la imagen lista para pasarla por WhatsApp. Todo pasa en tu dispositivo: no se sube nada.</p>
+
+<section class="card">
+  <div class="step"><i>1</i> MARCO (PNG con el centro transparente)</div>
+  <div class="row">
+    <label class="btn grow" for="frameIn">🖼️ Cargar marco</label>
+    <button class="btn sec grow" id="defaultFrame" type="button">✨ Usar marco ChessIA</button>
+  </div>
+  <input id="frameIn" type="file" accept="image/png,image/webp,image/*" />
+  <label class="chk"><input type="checkbox" id="remember" checked /> Recordar el marco en este dispositivo</label>
+  <div class="status" id="frameStatus"></div>
+</section>
+
+<section class="card">
+  <div class="step"><i>2</i> FOTO</div>
+  <div class="row">
+    <label class="btn grow" for="photoIn">📷 Cargar foto</label>
+  </div>
+  <input id="photoIn" type="file" accept="image/*" />
+  <div class="status" id="photoStatus"></div>
+</section>
+
+<section class="card">
+  <div class="step"><i>3</i> AJUSTA Y DESCARGA</div>
+  <div class="stage" id="stage">
+    <canvas id="cv" width="1080" height="1080"></canvas>
+    <div class="empty" id="empty">Carga un marco y una foto<br/>para ver el resultado aquí</div>
+  </div>
+  <p class="hint">Arrastra la foto para moverla · pellizca o usa el control para acercar.</p>
+  <label class="sl">ZOOM <input type="range" id="zoom" min="1" max="4" step="0.01" value="1" /></label>
+  <div class="row" style="margin-top:10px">
+    <button class="btn sec grow" id="rot" type="button">↻ Girar</button>
+    <button class="btn sec grow" id="reset" type="button">⟲ Centrar</button>
+  </div>
+  <label class="chk"><input type="checkbox" id="over" /> Foto por encima del marco (si el marco no es transparente)</label>
+  <div class="row" style="margin-top:12px;align-items:center">
+    <span class="hint" style="margin:0">Formato:</span>
+    <select id="fmt"><option value="png">PNG (máxima calidad)</option><option value="jpg">JPG (más liviano)</option></select>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <button class="btn grow" id="dl" type="button" disabled>⬇ Descargar</button>
+    <button class="btn wa grow" id="share" type="button" disabled>💬 Compartir</button>
+  </div>
+  <p class="hint" id="shareHint"></p>
+</section>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  let frame = null, photo = null;           // ImageBitmap | HTMLImageElement
+  const st = { x: 0, y: 0, zoom: 1, rot: 0 }; // x,y in canvas px offset from centre
+  const MAXSIDE = 1600;
+
+  const size = o => ({ w: o.width || o.naturalWidth, h: o.height || o.naturalHeight });
+  async function load(file) {
+    try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch (e) {
+      return await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+    }
+  }
+  function fitCanvas() {
+    let { w, h } = frame ? size(frame) : { w: 1080, h: 1080 };
+    const k = Math.min(1, MAXSIDE / Math.max(w, h));
+    cv.width = Math.round(w * k); cv.height = Math.round(h * k);
+  }
+  function drawPhoto() {
+    const { w: iw, h: ih } = size(photo), odd = st.rot % 2 === 1;
+    const pw = odd ? ih : iw, ph = odd ? iw : ih;
+    const base = Math.max(cv.width / pw, cv.height / ph), s = base * st.zoom;
+    ctx.save();
+    ctx.translate(cv.width / 2 + st.x, cv.height / 2 + st.y);
+    ctx.rotate(st.rot * Math.PI / 2);
+    ctx.scale(s, s);
+    ctx.drawImage(photo, -iw / 2, -ih / 2);
+    ctx.restore();
+  }
+  function draw() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = '#0b1523'; ctx.fillRect(0, 0, cv.width, cv.height);
+    const over = $('over').checked;
+    if (photo && !over) drawPhoto();
+    if (frame) ctx.drawImage(frame, 0, 0, cv.width, cv.height);
+    if (photo && over) drawPhoto();
+    const ready = !!(frame && photo);
+    $('empty').style.display = (frame || photo) ? 'none' : 'grid';
+    $('dl').disabled = !ready; $('share').disabled = !ready;
+  }
+
+  // --- marco por defecto (generado, centro transparente)
+  function makeDefaultFrame() {
+    const S = 1080, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d');
+    const bar = 150;
+    g.fillStyle = '#060d17'; g.fillRect(0, S - bar, S, bar);                // franja inferior
+    g.lineWidth = 14; g.strokeStyle = '#00E676'; g.shadowColor = '#00E676'; g.shadowBlur = 28;
+    g.strokeRect(14, 14, S - 28, S - 28 - 0);
+    g.shadowBlur = 0; g.lineWidth = 4; g.strokeStyle = '#00D2FF'; g.strokeRect(36, 36, S - 72, S - bar - 60);
+    const gr = g.createLinearGradient(0, S - bar, S, S - bar); gr.addColorStop(0, '#00E676'); gr.addColorStop(1, '#00D2FF');
+    g.fillStyle = gr; g.fillRect(0, S - bar, S, 6);
+    g.fillStyle = '#fff'; g.font = '800 64px "JetBrains Mono",monospace'; g.textAlign = 'center';
+    g.fillText('CHESS', S / 2 - 62, S - bar + 72); g.fillStyle = '#00E676'; g.fillText('IA', S / 2 + 142, S - bar + 72);
+    g.fillStyle = '#00D2FF'; g.font = '700 28px "JetBrains Mono",monospace';
+    g.fillText('HUMANO vs. IA  ·  28 y 29 OCT  ·  PARANINFO UAGRM', S / 2, S - bar + 118);
+    // esquinas
+    g.strokeStyle = '#00E676'; g.lineWidth = 10;
+    [[36, 36, 1, 1], [S - 36, 36, -1, 1], [36, S - bar - 24, 1, -1], [S - 36, S - bar - 24, -1, -1]].forEach(([x, y, dx, dy]) => { g.beginPath(); g.moveTo(x, y + 70 * dy); g.lineTo(x, y); g.lineTo(x + 70 * dx, y); g.stroke(); });
+    return createImageBitmap(c);
+  }
+
+  async function setFrame(img, label, persist) {
+    frame = img; fitCanvas(); draw();
+    const { w, h } = size(img); $('frameStatus').textContent = '✓ ' + label + ' · ' + w + '×' + h;
+    if (persist && $('remember').checked) saveFrame(img);
+  }
+  function saveFrame(img) {
+    try {
+      const c = document.createElement('canvas'); const { w, h } = size(img); const k = Math.min(1, MAXSIDE / Math.max(w, h));
+      c.width = Math.round(w * k); c.height = Math.round(h * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      const url = c.toDataURL('image/png'); if (url.length < 4.5e6) localStorage.setItem('chessia_marco', url);
+    } catch (e) {}
+  }
+  async function restoreFrame() {
+    try {
+      const url = localStorage.getItem('chessia_marco'); if (!url) return;
+      const img = new Image(); img.onload = () => setFrame(img, 'Marco guardado', false); img.src = url;
+    } catch (e) {}
+  }
+
+  $('frameIn').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; try { await setFrame(await load(f), f.name, true); } catch (er) { $('frameStatus').textContent = '⚠ No se pudo leer ese archivo'; } });
+  $('photoIn').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { photo = await load(f); Object.assign(st, { x: 0, y: 0, zoom: 1, rot: 0 }); $('zoom').value = 1; const { w, h } = size(photo); $('photoStatus').textContent = '✓ ' + f.name + ' · ' + w + '×' + h; draw(); }
+    catch (er) { $('photoStatus').textContent = '⚠ No se pudo leer esa foto'; }
+  });
+  $('defaultFrame').addEventListener('click', async () => { await setFrame(await makeDefaultFrame(), 'Marco ChessIA', false); $('over').checked = false; draw(); });
+  $('over').addEventListener('change', draw);
+  $('zoom').addEventListener('input', e => { st.zoom = +e.target.value; draw(); });
+  $('rot').addEventListener('click', () => { st.rot = (st.rot + 1) % 4; draw(); });
+  $('reset').addEventListener('click', () => { Object.assign(st, { x: 0, y: 0, zoom: 1 }); $('zoom').value = 1; draw(); });
+
+  // --- arrastrar / pellizcar / rueda
+  const ptr = new Map(); let pinch = 0;
+  const k = () => cv.width / cv.getBoundingClientRect().width;
+  cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptr.set(e.pointerId, { x: e.clientX, y: e.clientY }); pinch = 0; });
+  cv.addEventListener('pointermove', e => {
+    if (!ptr.has(e.pointerId) || !photo) return;
+    const p = ptr.get(e.pointerId);
+    if (ptr.size === 1) { st.x += (e.clientX - p.x) * k(); st.y += (e.clientY - p.y) * k(); }
+    ptr.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptr.size === 2) {
+      const [a, b] = [...ptr.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinch) { st.zoom = Math.min(4, Math.max(1, st.zoom * d / pinch)); $('zoom').value = st.zoom; }
+      pinch = d;
+    }
+    draw();
+  });
+  const up = e => { ptr.delete(e.pointerId); pinch = 0; };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  cv.addEventListener('wheel', e => { if (!photo) return; e.preventDefault(); st.zoom = Math.min(4, Math.max(1, st.zoom * (e.deltaY < 0 ? 1.06 : 0.94))); $('zoom').value = st.zoom; draw(); }, { passive: false });
+
+  // --- exportar
+  function blob() {
+    const jpg = $('fmt').value === 'jpg';
+    return new Promise(r => cv.toBlob(r, jpg ? 'image/jpeg' : 'image/png', 0.92));
+  }
+  const fname = () => 'foto-chessia.' + ($('fmt').value === 'jpg' ? 'jpg' : 'png');
+  $('dl').addEventListener('click', async () => {
+    const b = await blob(), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = fname();
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  });
+  $('share').addEventListener('click', async () => {
+    const b = await blob(), file = new File([b], fname(), { type: b.type });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], text: 'ChessIA · Humano vs. IA' }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+    $('dl').click(); $('shareHint').textContent = 'Tu navegador no permite compartir directo: se descargó la imagen, adjúntala en WhatsApp.';
+  });
+  if (!(navigator.canShare)) $('shareHint').textContent = 'En el celular, "Compartir" abre WhatsApp con la foto. En la computadora se descarga.';
+
+  fitCanvas(); draw(); restoreFrame();
+  window.marco = { setFrame, setPhoto: img => { photo = img; draw(); }, makeDefaultFrame, draw };
+})();
+</script>
+</body>
+</html>
