@@ -21,7 +21,7 @@
   function logout() { try { localStorage.removeItem(KEY); } catch (e) {} }
   /* En las páginas protegidas: oculta todo y manda a la landing si no hay sesión */
   function guard() {
-    if (isAuthed()) { document.documentElement.style.visibility = ''; return true; }
+    if (isAuthed()) { document.documentElement.style.visibility = 'visible'; return true; }   // la hoja de estilos la deja oculta: hay que forzar 'visible'
     location.replace('/?acceso=1');
     return false;
   }
