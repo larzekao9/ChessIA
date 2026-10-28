@@ -44,7 +44,8 @@ input[type=range]{flex:1;accent-color:var(--g)}
 details.more{margin-top:10px}details.more summary{cursor:pointer;color:var(--c);font:700 11px "JetBrains Mono",monospace}
 .fld{display:block;font:700 11px "JetBrains Mono",monospace;color:var(--c);margin:10px 0 6px}
 .phone{display:flex;align-items:center;gap:8px;background:#102236;border:1px solid rgba(0,210,255,.4);border-radius:12px;padding:0 12px}
-.phone span{font:700 13px "JetBrains Mono",monospace;white-space:nowrap}
+.phone select{background:transparent;border:0;border-right:1px solid rgba(0,210,255,.3);border-radius:0;padding:13px 6px 13px 0;max-width:58%;font:700 12px "JetBrains Mono",monospace;color:#fff}
+.phone select option{background:#102236}
 .phone input,textarea{background:transparent;border:0;color:#fff;font:600 16px "JetBrains Mono",monospace;padding:13px 0;width:100%;outline:0}
 textarea{background:#102236;border:1px solid rgba(0,210,255,.4);border-radius:12px;padding:12px;font:500 14px "Space Grotesk",sans-serif;resize:vertical}
 .phone:focus-within,textarea:focus{border-color:var(--g)}
@@ -106,13 +107,23 @@ select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-
 </section>
 <section class="card" id="sendCard">
   <div class="step"><i>4</i> ENVIAR POR WHATSAPP</div>
-  <label class="fld" for="phone">Número de la persona (Bolivia)</label>
-  <div class="phone"><span>🇧🇴 +591</span><input id="phone" type="tel" inputmode="numeric" autocomplete="off" placeholder="7XXXXXXX" maxlength="16" /></div>
+  <label class="fld" for="phone">Número de la persona</label>
+  <div class="phone">
+    <select id="cc" aria-label="País"></select>
+    <input id="phone" type="tel" inputmode="tel" autocomplete="off" placeholder="7XXXXXXX" maxlength="20" />
+  </div>
+  <p class="hint" id="phoneHint" style="margin-top:6px"></p>
   <label class="fld" for="msg">Mensaje</label>
-  <textarea id="msg" rows="3">¡Hola! 👋 Te comparto tu foto del torneo HUMANO vs. IA ♟️🤖 28 y 29 de octubre · Paraninfo UAGRM. Juega tú también: https://chessia-tau.vercel.app</textarea>
+  <textarea id="msg" rows="6">¡Hola! 👋 Te comparto tu foto del torneo HUMANO vs. IA ♟️🤖
+28 y 29 de octubre · Paraninfo UAGRM.
+
+👉 Únete al grupo oficial de WhatsApp:
+https://chat.whatsapp.com/F3FbfRMJ5kp3J3zHkbCEII?mode=gi_t
+
+🔥 Juega tú también: https://chessia-tau.vercel.app</textarea>
   <button class="btn wa" id="send" type="button" disabled style="width:100%;margin-top:12px">💬 Enviar por WhatsApp</button>
   <div class="status" id="sendStatus"></div>
-  <p class="hint">Se abre el chat de esa persona en <b>tu WhatsApp</b> (con tu número) y la foto queda copiada: mantén pulsado el mensaje, toca <b>Pegar</b> y envía. Si el número es de otro país, escríbelo completo con el código (ej. 54911…).</p>
+  <p class="hint">Se abre el chat de esa persona en <b>tu WhatsApp</b> (con tu número) y la foto queda copiada: mantén pulsado el mensaje, toca <b>Pegar</b> y envía. Elige el país de la persona; para otros, usa «Otro» y escribe el número con su código.</p>
 </section>
 </main>
 
@@ -245,17 +256,37 @@ select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-
   if (!(navigator.canShare)) $('shareHint').textContent = 'En el celular, "Compartir" abre WhatsApp con la foto. En la computadora se descarga.';
 
   // --- enviar por WhatsApp al número indicado
-  function normPhone(v) {
-    let d = (v || '').replace(/\D/g, '');
-    if (d.startsWith('00')) d = d.slice(2);
-    if (d.length === 8 && /^[67]/.test(d)) return '591' + d;      // celular de Bolivia
-    if (d.length === 11 && d.startsWith('591')) return d;            // Bolivia con código
-    if (d.length >= 9 && d.length <= 15) return d;                   // otro país, ya con código
-    return null;
+  const COUNTRIES = [
+    ['🇧🇴 Bolivia +591', '591', '7XXXXXXX'], ['🇦🇷 Argentina +54', '54', '11 5555 1234'], ['🇧🇷 Brasil +55', '55', '11 91234 5678'],
+    ['🇨🇱 Chile +56', '56', '9 1234 5678'], ['🇵🇪 Perú +51', '51', '912 345 678'], ['🇵🇾 Paraguay +595', '595', '981 123 456'],
+    ['🇺🇾 Uruguay +598', '598', '91 234 567'], ['🇨🇴 Colombia +57', '57', '300 123 4567'], ['🇲🇽 México +52', '52', '55 1234 5678'],
+    ['🇪🇨 Ecuador +593', '593', '99 123 4567'], ['🇻🇪 Venezuela +58', '58', '412 123 4567'], ['🇺🇸 EE.UU./Canadá +1', '1', '415 555 2671'],
+    ['🇪🇸 España +34', '34', '612 345 678'], ['🌎 Otro (con código)', '', '+código y número']
+  ];
+  COUNTRIES.forEach((c, i) => { const o = document.createElement('option'); o.value = i; o.textContent = c[0]; $('cc').appendChild(o); });
+  function updHint() {
+    const c = COUNTRIES[$('cc').value]; $('phone').placeholder = c[2];
+    $('phoneHint').textContent = c[1] ? 'Escribe solo el número local, sin el +' + c[1] + '.' : 'Escribe el número completo con el código del país (ej. +34 612 345 678).';
+  }
+  $('cc').addEventListener('change', updHint); updHint();
+  function normPhone(raw, idx) {
+    const cc = COUNTRIES[idx][1], v = (raw || '').trim();
+    let d = v.replace(/\D/g, '');
+    if (!d) return null;
+    if (v.startsWith('+') || d.startsWith('00') || !cc) { if (d.startsWith('00')) d = d.slice(2); return d.length >= 9 && d.length <= 15 ? d : null; }
+    if (cc === '591') {                                   // Bolivia: celular de 8 dígitos (6/7)
+      if (d.length === 11 && d.startsWith('591')) return d;
+      return d.length === 8 && /^[67]/.test(d) ? '591' + d : null;
+    }
+    if (d.startsWith(cc) && d.length >= cc.length + 8) d = d.slice(cc.length);   // ya traía el código
+    d = d.replace(/^0+/, '');
+    if (cc === '54' && !d.startsWith('9')) d = '9' + d;                         // Argentina: celulares llevan 9
+    const full = cc + d;
+    return full.length >= 9 && full.length <= 15 ? full : null;
   }
   $('send').addEventListener('click', async () => {
-    const num = normPhone($('phone').value), stEl = $('sendStatus');
-    if (!num) { stEl.style.color = '#ff7a90'; stEl.textContent = '⚠ Escribe un celular boliviano de 8 dígitos (empieza con 6 o 7).'; $('phone').focus(); return; }
+    const num = normPhone($('phone').value, $('cc').value), stEl = $('sendStatus');
+    if (!num) { stEl.style.color = '#ff7a90'; stEl.textContent = COUNTRIES[$('cc').value][1] === '591' ? '⚠ Escribe un celular boliviano de 8 dígitos (empieza con 6 o 7).' : '⚠ Revisa el número: parece incompleto.'; $('phone').focus(); return; }
     stEl.style.color = ''; stEl.textContent = 'Preparando la foto…';
     const url = 'https://wa.me/' + num + '?text=' + encodeURIComponent($('msg').value.trim());
     let copied = false;
