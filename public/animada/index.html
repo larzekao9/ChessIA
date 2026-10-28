@@ -3,7 +3,7 @@
 <html class="dark scroll-smooth" lang="es"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-    <meta property="og:type" content="website" />
+<meta property="og:type" content="website" />
     <meta property="og:site_name" content="ChessIA" />
     <meta property="og:title" content="CHESSIA - Humano vs. IA" />
     <meta property="og:description" content="Juega ajedrez contra un brazo robótico Dobot CR5 controlado por Turing, la IA de ChessIA. UAGRM FICCT · ADASC." />
@@ -621,7 +621,8 @@ const sq = (c, r) => ({ x: c * tileSize - boardOffset, z: r * tileSize - boardOf
 const findPiece = (c, r) => pieces.find(p => p.c === c && p.r === r);
 const TRAY = { x: -7.9, z: -0.8 };
 const look = { x: 0, y: 1.6, z: 0.2 };
-const fx = { trail: 0 };
+const fx = { trail: 0, link: 0, packet: 0 };
+const brainFx = { think: 0.15, gold: 0 };
 
 // capture tray
 const tray = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.25, 3.4), baseMat);
@@ -688,11 +689,90 @@ function shock(x, z, hex, size) {
   gsap.to(ring.material, { opacity: 0, duration: 1, ease: 'power1.in', onComplete: () => { masterGroup.remove(ring); ring.geometry.dispose(); ring.material.dispose(); } });
 }
 
+
+// ---- 3D neural brain floating beside the arm: it "thinks", then sends the move to the gripper ----
+const brain3d = new THREE.Group(); brain3d.position.set(5.2, 6.9, -2.2); masterGroup.add(brain3d);
+const BS = 2.9, BN = [];
+function bShell(c, r, n) {
+  while (n > 0) {
+    const x = Math.random() * 2 - 1, y = Math.random() * 2 - 1, z = Math.random() * 2 - 1, l = Math.hypot(x, y, z);
+    if (l > 1 || l < 0.05) continue;
+    const m = 1 + 0.09 * Math.sin(7 * x / l + 3 * y / l) * Math.cos(6 * z / l), k = (0.8 + Math.random() * 0.2) * m;
+    BN.push({ x: (c[0] + x / l * r[0] * k) * BS, y: (c[1] + y / l * r[1] * k) * BS, z: (c[2] + z / l * r[2] * k) * BS, act: 0 }); n--;
+  }
+}
+bShell([-0.5, 0.05, 0], [0.52, 0.62, 0.92], 80); bShell([0.5, 0.05, 0], [0.52, 0.62, 0.92], 80); bShell([0, -0.55, -0.62], [0.42, 0.22, 0.3], 14);
+for (let i = 0; i < 4; i++) BN.push({ x: 0, y: (-0.6 - i * 0.14) * BS, z: -0.25 * BS, act: 0 });
+const bAdj = BN.map(() => []), bEdges = [];
+BN.forEach((a, i) => {
+  BN.map((b, j) => ({ j, d: (a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2 })).filter(o => o.j !== i).sort((p, q) => p.d - q.d).slice(0, 3).forEach(o => {
+    if (o.d > 1.6 || bAdj[i].some(e => e.to === o.j)) return;
+    const e = { a: i, b: o.j, glow: 0 }; bEdges.push(e); bAdj[i].push({ to: o.j, e }); bAdj[o.j].push({ to: i, e });
+  });
+});
+const bFront = BN.map((n, i) => i).filter(i => BN[i].z > 0.5 * BS);
+const bnPos = new Float32Array(BN.length * 3), bnCol = new Float32Array(BN.length * 3);
+BN.forEach((n, i) => { bnPos[i * 3] = n.x; bnPos[i * 3 + 1] = n.y; bnPos[i * 3 + 2] = n.z; });
+const bnGeo = new THREE.BufferGeometry();
+bnGeo.setAttribute('position', new THREE.BufferAttribute(bnPos, 3)); bnGeo.setAttribute('color', new THREE.BufferAttribute(bnCol, 3));
+const bNodes = new THREE.Points(bnGeo, new THREE.PointsMaterial({ size: 0.46, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+const bePos = new Float32Array(bEdges.length * 6), beCol = new Float32Array(bEdges.length * 6);
+bEdges.forEach((e, k) => { const A = BN[e.a], B = BN[e.b]; bePos.set([A.x, A.y, A.z, B.x, B.y, B.z], k * 6); });
+const beGeo = new THREE.BufferGeometry();
+beGeo.setAttribute('position', new THREE.BufferAttribute(bePos, 3)); beGeo.setAttribute('color', new THREE.BufferAttribute(beCol, 3));
+const bLines = new THREE.LineSegments(beGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+bNodes.frustumCulled = false; bLines.frustumCulled = false; brain3d.add(bLines, bNodes);
+const brainLight = new THREE.PointLight(0x00d2ff, 2.2, 16); brain3d.add(brainLight);
+// holographic base ring under the brain
+const bRing = new THREE.Mesh(new THREE.RingGeometry(3.2, 3.4, 48), new THREE.MeshBasicMaterial({ color: 0x00d2ff, transparent: true, opacity: 0.5, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
+bRing.rotation.x = -Math.PI / 2; bRing.position.y = -3.9; brain3d.add(bRing);
+
+// link beam brain -> gripper + travelling data packet
+const linkGeo = new THREE.BufferGeometry(); const linkPos = new Float32Array(6); linkGeo.setAttribute('position', new THREE.BufferAttribute(linkPos, 3));
+const link = new THREE.Line(linkGeo, new THREE.LineBasicMaterial({ color: 0x00e676, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+link.frustumCulled = false; masterGroup.add(link);
+const packet = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), new THREE.MeshBasicMaterial({ color: 0xb6ffd8, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+packet.visible = false; masterGroup.add(packet);
+
+const bQueue = []; let bNow = 0, bSpawn = 0;
+function bFire(i, d) {
+  BN[i].act = 1;
+  if (d >= 5) return;
+  bAdj[i].slice().sort(() => Math.random() - 0.5).slice(0, 2).forEach(o => { bQueue.push({ t: bNow + 0.06 + Math.random() * 0.06, i: o.to, d: d + 1, e: o.e }); o.e.glow = 1; });
+}
+function brainBurst(n) { for (let k = 0; k < n; k++) bFire(Math.floor(Math.random() * BN.length), 2); }
+function stepBrain(dt, time) {
+  bNow = time;
+  brain3d.rotation.y = time * 0.35; brain3d.position.y = 6.9 + Math.sin(time * 1.3) * 0.25;
+  bSpawn -= dt;
+  if (bSpawn <= 0) { bFire(bFront[(Math.random() * bFront.length) | 0], 0); bSpawn = 0.5 - brainFx.think * 0.42; }
+  for (let k = bQueue.length - 1; k >= 0; k--) { const q = bQueue[k]; if (q.t <= time) { bQueue.splice(k, 1); if (Math.random() < 0.85) bFire(q.i, q.d); else BN[q.i].act = 1; } }
+  const kA = Math.pow(0.03, dt), kG = Math.pow(0.02, dt), g = brainFx.gold;
+  BN.forEach((n, i) => {
+    n.act *= kA;
+    bnCol[i * 3] = 0.0 + n.act * 0.5 + g * (0.6 + n.act * 0.4); bnCol[i * 3 + 1] = 0.45 + n.act * 0.55 - g * 0.15; bnCol[i * 3 + 2] = 0.65 - n.act * 0.2 - g * 0.5;
+  });
+  bEdges.forEach((e, k) => {
+    e.glow *= kG; const v = 0.14 + e.glow;
+    for (let s = 0; s < 2; s++) { const o = k * 6 + s * 3; beCol[o] = g * v * 0.9; beCol[o + 1] = v * (0.7 - g * 0.25); beCol[o + 2] = v * (0.8 - g * 0.7); }
+  });
+  bnGeo.attributes.color.needsUpdate = true; beGeo.attributes.color.needsUpdate = true;
+  brainLight.intensity = 1.6 + brainFx.think * 2.2;
+  bRing.rotation.z = time * 0.6;
+  // beam + packet follow the live gripper position
+  const bx = brain3d.position.x, by = brain3d.position.y, bz = brain3d.position.z, tx = tgt.x + tgt.sway, ty = tgt.y, tz = tgt.z;
+  linkPos.set([bx, by, bz, tx, ty, tz]); linkGeo.attributes.position.needsUpdate = true; link.material.opacity = fx.link;
+  packet.visible = fx.packet > 0.001 && fx.packet < 0.999;
+  packet.position.set(bx + (tx - bx) * fx.packet, by + (ty - by) * fx.packet + Math.sin(fx.packet * Math.PI) * 1.2, bz + (tz - bz) * fx.packet);
+  packet.scale.setScalar(1 + Math.sin(time * 30) * 0.2);
+}
+
 function resetBoard() {
   pieces.forEach(p => { p.mesh.position.copy(p.home); p.mesh.scale.set(1, 1, 1); });
   movedPawn.position.set(pStart.x, 0.1, pStart.z); movedPawn.scale.set(1, 1, 1);
   state.attached = false; state.piece = null; fx.trail = 0;
   Object.assign(camBase, { r: 24, y: 16 }); Object.assign(look, { x: 0, y: 1.6, z: 0.2 });
+  Object.assign(fx, { link: 0, packet: 0 }); Object.assign(brainFx, { think: 0.15, gold: 0 });
 }
 
 const tl = gsap.timeline({ repeat: -1, paused: true });
@@ -701,7 +781,15 @@ const CAM_HOME = { r: 24, y: 16 };
 // One full pick-and-place choreography (6.3 s)
 function addMove(at, o) {
   const A = o.from, B = o.to, pc = o.piece;
-  tl.call(() => { status('think', 'TURING EVALÚA: ' + o.label); originRingMesh.position.set(A.x, 0.12, A.z); targetRingMesh.position.set(B.x, 0.12, B.z); setLed(0x00d2ff); }, null, at)
+  tl.call(() => { status('think', 'TURING PIENSA → ENVÍA AL BRAZO: ' + o.label); originRingMesh.position.set(A.x, 0.12, A.z); targetRingMesh.position.set(B.x, 0.12, B.z); setLed(0x00d2ff); }, null, at)
+    .set(fx, { link: 0, packet: 0 }, at)
+    .to(brainFx, { think: 1, duration: 0.25 }, at)
+    .to(brain3d.scale, { x: 1.18, y: 1.18, z: 1.18, duration: 0.3, yoyo: true, repeat: 1, ease: 'sine.inOut' }, at + 0.2)
+    .to(fx, { link: 0.8, duration: 0.25 }, at + 0.3)
+    .to(fx, { packet: 1, duration: 0.55, ease: 'power2.in' }, at + 0.4)
+    .call(() => { emit(tgt.x + tgt.sway, tgt.y - 0.3, tgt.z, 22, 0x00e676, 3); setLed(0x00e676); brainBurst(8); }, null, at + 0.95)
+    .to(brainFx, { think: 0.15, duration: 0.5 }, at + 0.95)
+    .to(fx, { link: 0, duration: 0.4 }, at + 1.0)
     .fromTo(scan.position, { z: -6.8 }, { z: 6.8, duration: 0.9, ease: 'power1.inOut' }, at)
     .fromTo(scan.material, { opacity: 0 }, { opacity: 0.7, duration: 0.45, yoyo: true, repeat: 1, ease: 'sine.inOut' }, at)
     .to(tgt, { x: A.x, z: A.z, y: HOVER_Y, f: OPEN, duration: 0.9, ease: 'power2.inOut' }, at)
@@ -746,6 +834,10 @@ T = addMove(T, { from: sq(2, 4), to: TRAY, piece: () => victim.mesh, toY: 0.11, 
 // …and the pawn takes its square
 T = addMove(T, { from: sq(2, 6), to: sq(2, 4), piece: () => pawnC.mesh, toY: 0.1, what: 'PEÓN', fromN: nm(2, 6), toN: nm(2, 4), label: 'PEÓN ' + nm(2, 6) + ' × ' + nm(2, 4), done: 'JUGADA REALIZADA: ' + nm(2, 6) + ' × ' + nm(2, 4) + ' ✓', hex: 0x00e676 });
 // 3) finale: checkmate celebration
+tl.to(brainFx, { gold: 1, think: 1, duration: 0.3 }, T)
+  .call(() => brainBurst(60), null, T + 0.2).call(() => brainBurst(60), null, T + 1.4)
+  .to(brain3d.scale, { x: 1.35, y: 1.35, z: 1.35, duration: 0.4, yoyo: true, repeat: 3, ease: 'sine.inOut' }, T + 0.3)
+  .to(brainFx, { gold: 0, think: 0.15, duration: 1 }, T + 3);
 tl.call(() => { status('mate', '♛ JAQUE MATE · HUMANO vs IA ♛'); setLed(0xf5b700); }, null, T)
   .to(tgt, { x: 0, z: 0.6, y: 5.4, duration: 1, ease: 'power2.inOut' }, T)
   .to(tgt, { spin: Math.PI * 4, duration: 1.8, ease: 'power3.inOut' }, T + 0.8)
@@ -825,7 +917,7 @@ function frame(time) {
   );
   camera.lookAt(look.x, look.y, look.z);
   const dt = Math.min(0.05, time - (frame.t || time)); frame.t = time;
-  applyPose(); stepSparks(dt); stepTrail();
+  applyPose(); stepSparks(dt); stepTrail(); stepBrain(dt, time);
   targetRingMesh.scale.setScalar(1 + Math.sin(time * 4.5) * 0.12);
   originRingMesh.scale.setScalar(1 + Math.cos(time * 4.5) * 0.12);
   renderer.render(scene, camera);
