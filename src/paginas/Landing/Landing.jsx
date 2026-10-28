@@ -4,8 +4,8 @@
  * - «Regístrate gratis» lleva a la pantalla de ingreso en modo registro; «Ingresar», en modo inicio de sesión.
  * - El formulario de inscripción al torneo no crea cuenta: arma el mensaje y abre WhatsApp con la organización.
  * - La escena 3D es una ilustración en bucle; no refleja el brazo real.
- * - Sin `alRegistrarse`/`alIngresar` (la versión estática publicada sola, ver `landing.html`) no hay botón de ingreso, «Regístrate» lleva
- *   a la inscripción por WhatsApp y no se muestran los enlaces a pantallas de la app (`#confianza`, `#politica`).
+ * - Sin `alRegistrarse`/`alIngresar` (la versión estática publicada sola, ver `landing.html`) no hay botón de ingreso, «Regístrate» abre la
+ *   plataforma (`URL_PLATAFORMA`) y no se muestran los enlaces a pantallas de la app (`#confianza`, `#politica`).
  * - Las cifras de Turing son las mismas que publica la ficha de Confianza (`/#confianza`); si cambian allá, se actualizan acá.
  */
 import { useRef, useState } from 'react';
@@ -14,8 +14,10 @@ import './Landing.css';
 
 const WHATSAPP_ORGANIZACION = '59178576780';
 const enlaceWa = (mensaje) => `https://wa.me/${WHATSAPP_ORGANIZACION}?text=${encodeURIComponent(mensaje)}`;
-const WA_GRUPO = enlaceWa('Hola, deseo unirme al grupo oficial de WhatsApp ChessIA');
-const WA_INFO = enlaceWa('Hola, deseo información del Torneo Humano vs IA');
+// Dónde se crea la cuenta (versión estática) y el grupo oficial de WhatsApp (los dos botones de WhatsApp de la página).
+const URL_PLATAFORMA = 'https://home-lab.tail3b5ebb.ts.net/';
+const WA_GRUPO = 'https://chat.whatsapp.com/F3FbfRMJ5kp3J3zHkbCEII?mode=gi_t';
+const WA_INFO = WA_GRUPO;
 
 // Fuerza medida de Turing v6 (Elo relativo a Stockfish calibrado, 120 partidas por medición; no es un Elo oficial).
 const TURING = { version: 'v6', partidas: '35.000', eloPartidas: '2200+', coincidencia: '49 %', eloRed: 1355, eloBusqueda: 1808, rangoBusqueda: '1737–1878' };
@@ -82,7 +84,7 @@ export default function Landing({ alRegistrarse: alRegistrarseApp = null, alIngr
   const [inscripcion, setInscripcion] = useState({ nombre: '', telefono: '', categoria: CATEGORIAS[0], elo: '' });
 
   const irAInscripcion = () => inscripcionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  const alRegistrarse = alRegistrarseApp ?? irAInscripcion;
+  const alRegistrarse = alRegistrarseApp ?? (() => window.open(URL_PLATAFORMA, '_blank', 'noopener,noreferrer'));
   const chip = CHIP_POR_FASE[fase];
 
   const enviarInscripcion = (evento) => {
