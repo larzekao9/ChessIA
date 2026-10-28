@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Invitaciones · ChessIA</title>
+<meta name="theme-color" content="#060d17" />
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{--g:#00E676;--c:#00D2FF;--bg:#060d17;--mut:#8892B0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:var(--bg);color:#e8eef7;font-family:"Space Grotesk",system-ui,sans-serif;
+ background-image:radial-gradient(ellipse at 50% 0%,rgba(0,210,255,.1),transparent 60%),linear-gradient(to right,rgba(0,210,255,.04) 1px,transparent 1px),linear-gradient(to bottom,rgba(0,210,255,.04) 1px,transparent 1px);background-size:100% 100%,28px 28px,28px 28px;
+ padding:0 16px calc(24px + env(safe-area-inset-bottom))}
+main{max-width:520px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 8px}
+.brand{font:800 18px "JetBrains Mono",monospace;letter-spacing:.08em}.brand b{color:var(--g)}
+.nav{display:flex;gap:6px}
+.back{font:700 11px "JetBrains Mono",monospace;color:var(--c);text-decoration:none;border:1px solid rgba(0,210,255,.4);border-radius:999px;padding:6px 12px}
+h1{font:800 22px "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 2px}
+.sub{color:var(--mut);font-size:13px;margin:0 0 14px}
+.card{background:rgba(11,21,35,.85);border:1px solid rgba(0,210,255,.22);border-radius:16px;padding:14px;margin-bottom:12px}
+.step{display:flex;align-items:center;gap:8px;font:800 11px "JetBrains Mono",monospace;letter-spacing:.14em;color:var(--c);margin-bottom:10px}
+.step i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--g);color:#04200f;font-style:normal}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{appearance:none;border:0;cursor:pointer;font:800 12px "JetBrains Mono",monospace;letter-spacing:.04em;text-transform:uppercase;border-radius:12px;padding:12px 14px;color:#04200f;background:var(--g);box-shadow:0 4px 18px rgba(0,230,118,.4);text-align:center;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:active{transform:scale(.96)}.btn.sec{background:#102236;color:var(--c);border:1px solid rgba(0,210,255,.4);box-shadow:none}
+.btn.wa{background:#25D366}.btn[disabled]{opacity:.4;pointer-events:none;box-shadow:none}
+.grow{flex:1 1 140px}
+input[type=file]{display:none}
+.hint{font-size:12px;color:var(--mut);margin:8px 0 0}
+.status{font:600 11px "JetBrains Mono",monospace;color:var(--g);margin-top:8px;min-height:14px}
+.fld{display:block;font:700 11px "JetBrains Mono",monospace;color:var(--c);margin:10px 0 6px}
+.in,.phone,textarea,select.in{background:#102236;border:1px solid rgba(0,210,255,.4);border-radius:12px;color:#fff}
+.in{width:100%;padding:13px 12px;font:700 17px "Space Grotesk",sans-serif;outline:0}
+.in:focus,.phone:focus-within,textarea:focus{border-color:var(--g)}
+.phone{display:flex;align-items:center;gap:8px;padding:0 12px}
+.phone select{background:transparent;border:0;border-right:1px solid rgba(0,210,255,.3);padding:13px 6px 13px 0;max-width:58%;font:700 12px "JetBrains Mono",monospace;color:#fff}
+.phone select option{background:#102236}
+.phone input{background:transparent;border:0;color:#fff;font:600 16px "JetBrains Mono",monospace;padding:13px 0;width:100%;outline:0}
+textarea{width:100%;padding:12px;font:500 14px "Space Grotesk",sans-serif;resize:vertical;outline:0}
+.stage{border-radius:14px;overflow:hidden;border:1px solid rgba(0,230,118,.45);box-shadow:0 0 28px rgba(0,230,118,.2);touch-action:none}
+canvas{display:block;width:100%;height:auto}
+.seg{display:flex;gap:6px;margin-bottom:6px}
+.seg label{flex:1;text-align:center;font:700 11px "JetBrains Mono",monospace;padding:10px 6px;border-radius:10px;border:1px solid rgba(0,210,255,.4);color:var(--c);cursor:pointer}
+.seg input{display:none}.seg input:checked+span{color:#04200f}
+.seg label:has(input:checked){background:var(--g);color:#04200f;border-color:var(--g)}
+label.sl{display:flex;align-items:center;gap:10px;font:700 11px "JetBrains Mono",monospace;color:var(--c);margin-top:10px}
+input[type=range]{flex:1;accent-color:var(--g)}
+#custom{display:none}
+</style>
+</head>
+<body>
+<main>
+<header><div class="brand">CHESS<b>IA</b></div><div class="nav"><a class="back" href="../marco/">📷 FOTO</a><a class="back" href="/">← LANDING</a></div></header>
+<h1>Invitaciones</h1>
+<p class="sub">Escribe el nombre, se coloca en la plantilla del torneo y la mandas por WhatsApp. Todo se hace en tu dispositivo.</p>
+
+<section class="card">
+  <div class="step"><i>1</i> NOMBRE</div>
+  <label class="fld" for="name">¿A quién invitamos?</label>
+  <input class="in" id="name" type="text" autocomplete="off" placeholder="Ej: Carlos Suárez" maxlength="48" />
+  <label class="fld" for="tone">Tratamiento</label>
+  <select class="in" id="tone" style="font:700 14px 'Space Grotesk',sans-serif"><option value="ESTÁS INVITADO/A">Estás invitado/a</option><option value="ESTÁS INVITADO">Estás invitado</option><option value="ESTÁS INVITADA">Estás invitada</option><option value="ESTÁN INVITADOS">Están invitados</option></select>
+</section>
+
+<section class="card">
+  <div class="step"><i>2</i> PLANTILLA</div>
+  <div class="seg">
+    <label><input type="radio" name="mode" value="official" checked /><span>🏆 Oficial</span></label>
+    <label><input type="radio" name="mode" value="custom" /><span>🖼️ Mi plantilla</span></label>
+  </div>
+  <div id="custom">
+    <label class="btn sec" for="tplIn" style="width:100%;margin-top:8px">Cargar mi plantilla (imagen)</label>
+    <input id="tplIn" type="file" accept="image/*" />
+    <label class="sl">TAMAÑO <input type="range" id="tsize" min="30" max="200" value="90" /></label>
+    <div class="row" style="margin-top:10px;align-items:center"><span class="hint" style="margin:0">Color del nombre:</span>
+      <select class="in" id="tcolor" style="width:auto;padding:8px;font:700 12px 'JetBrains Mono',monospace"><option value="#ffffff">Blanco</option><option value="#0b1523">Negro</option><option value="#f5b700">Dorado</option><option value="#00E676">Verde</option></select></div>
+    <p class="hint">Arrastra el nombre sobre la imagen para ponerlo donde quieras.</p>
+  </div>
+  <div class="status" id="tplStatus">✓ Plantilla oficial Humano vs. IA</div>
+</section>
+
+<section class="card">
+  <div class="step"><i>3</i> VISTA PREVIA</div>
+  <div class="stage"><canvas id="cv" width="1080" height="1350"></canvas></div>
+  <div class="row" style="margin-top:12px">
+    <button class="btn grow" id="dl" type="button">⬇ Descargar</button>
+  </div>
+</section>
+
+<section class="card" id="sendCard">
+  <div class="step"><i>4</i> ENVIAR POR WHATSAPP</div>
+  <label class="fld" for="phone">Número de la persona</label>
+  <div class="phone"><select id="cc" aria-label="País"></select><input id="phone" type="tel" inputmode="tel" autocomplete="off" placeholder="7XXXXXXX" maxlength="20" /></div>
+  <p class="hint" id="phoneHint" style="margin-top:6px"></p>
+  <label class="fld" for="msg">Mensaje</label>
+  <textarea id="msg" rows="7"></textarea>
+  <button class="btn wa" id="send" type="button" style="width:100%;margin-top:12px">💬 Enviar por WhatsApp</button>
+  <div class="status" id="sendStatus"></div>
+  <p class="hint">Se abre el chat de esa persona en <b>tu WhatsApp</b> y la invitación queda copiada: mantén pulsado el mensaje, toca <b>Pegar</b> y envía. El texto lleva el nombre automáticamente.</p>
+</section>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  const W = 1080, H = 1350, WIN = { x: 60, y: 295, w: 960, h: 580 };   // ventana transparente del marco oficial
+  const GROUP = 'https://chat.whatsapp.com/F3FbfRMJ5kp3J3zHkbCEII?mode=gi_t';
+  let frame = null, tpl = null, mode = 'official';
+  const pos = { x: 0.5, y: 0.5 };                                      // nombre en plantilla propia (fracción)
+
+  const titleCase = s => s.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+  const getName = () => titleCase($('name').value) || 'Nombre Apellido';
+
+  async function load(file) {
+    try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch (e) { return await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); }); }
+  }
+  function fitFont(text, maxW, start, minSize, weight) {
+    let size = start; ctx.font = `${weight} ${size}px "Space Grotesk",sans-serif`;
+    while (ctx.measureText(text).width > maxW && size > minSize) { size -= 2; ctx.font = `${weight} ${size}px "Space Grotesk",sans-serif`; }
+    return size;
+  }
+  function nameLines(text, maxW, start) {
+    let size = fitFont(text, maxW, start, 70, 800);
+    if (ctx.measureText(text).width <= maxW) return { lines: [text], size };
+    const words = text.split(' ');                                       // dos líneas equilibradas
+    let best = [text, ''], diff = 1e9;
+    for (let i = 1; i < words.length; i++) { const a = words.slice(0, i).join(' '), b = words.slice(i).join(' '); const d = Math.abs(a.length - b.length); if (d < diff) { diff = d; best = [a, b]; } }
+    const longest = best.reduce((x, y) => (x.length > y.length ? x : y));
+    size = fitFont(longest, maxW, start * 0.85, 40, 800);
+    return { lines: best.filter(Boolean), size };
+  }
+
+  function drawOfficialPanel() {
+    const { x, y, w, h } = WIN;
+    ctx.save(); ctx.beginPath(); ctx.rect(x - 4, y - 4, w + 8, h + 8); ctx.clip();
+    const g = ctx.createLinearGradient(x, y, x + w, y + h); g.addColorStop(0, '#04122b'); g.addColorStop(.55, '#0a2a66'); g.addColorStop(1, '#06142e');
+    ctx.fillStyle = g; ctx.fillRect(x - 4, y - 4, w + 8, h + 8);
+    const r1 = ctx.createRadialGradient(x + w * .82, y + h * .2, 10, x + w * .82, y + h * .2, 420); r1.addColorStop(0, 'rgba(0,210,255,.35)'); r1.addColorStop(1, 'rgba(0,210,255,0)'); ctx.fillStyle = r1; ctx.fillRect(x, y, w, h);
+    const r2 = ctx.createRadialGradient(x + w * .1, y + h * .95, 10, x + w * .1, y + h * .95, 380); r2.addColorStop(0, 'rgba(0,230,118,.30)'); r2.addColorStop(1, 'rgba(0,230,118,0)'); ctx.fillStyle = r2; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = 'rgba(0,210,255,.10)'; ctx.lineWidth = 1;
+    for (let gx = x; gx < x + w; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); ctx.stroke(); }
+    for (let gy = y; gy < y + h; gy += 40) { ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.font = '300px serif'; ctx.textAlign = 'center';
+    ctx.fillText('♞', x + 150, y + h - 30); ctx.fillText('♜', x + w - 130, y + 270);
+    ctx.fillStyle = 'rgba(0,230,118,.09)'; ctx.fillText('♟', x + w - 150, y + h - 30);
+    ctx.restore();
+
+    const cx = x + w / 2;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#00D2FF'; ctx.font = '700 25px "JetBrains Mono",monospace';
+    ctx.fillText('★  INVITACIÓN ESPECIAL  ★', cx, y + 70);
+    ctx.fillStyle = '#ffffff'; ctx.font = '800 54px "Space Grotesk",sans-serif';
+    ctx.fillText($('tone').value, cx, y + 140);
+    // nombre
+    const { lines, size } = nameLines(getName(), w - 90, 112);
+    const gold = ctx.createLinearGradient(x, 0, x + w, 0); gold.addColorStop(0, '#00E676'); gold.addColorStop(1, '#00D2FF');
+    ctx.fillStyle = gold; ctx.font = `800 ${size}px "Space Grotesk",sans-serif`;
+    ctx.shadowColor = 'rgba(0,230,118,.55)'; ctx.shadowBlur = 24;
+    const lh = size * 1.05, baseY = y + 270 + (lines.length === 1 ? 20 : -6);
+    lines.forEach((ln, i) => ctx.fillText(ln, cx, baseY + i * lh));
+    ctx.shadowBlur = 0;
+    const by = baseY + (lines.length - 1) * lh;
+    ctx.strokeStyle = 'rgba(0,210,255,.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(cx - 190, by + 34); ctx.lineTo(cx + 190, by + 34); ctx.stroke();
+    ctx.fillStyle = '#e8f1ff'; ctx.font = '700 36px "Space Grotesk",sans-serif';
+    ctx.fillText('al torneo HUMANO vs. IA', cx, by + 92);
+    ctx.fillStyle = '#9fd8ff'; ctx.font = '500 26px "Space Grotesk",sans-serif';
+    ctx.fillText('con Turing y el brazo Dobot CR5', cx, by + 134);
+    ctx.textAlign = 'left';
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    if (mode === 'official') {
+      cv.width = W; cv.height = H;
+      ctx.fillStyle = '#0a1a3a'; ctx.fillRect(0, 0, W, H);
+      drawOfficialPanel();
+      if (frame) ctx.drawImage(frame, 0, 0, W, H);
+    } else {
+      if (tpl) {
+        const sw = tpl.width || tpl.naturalWidth, sh = tpl.height || tpl.naturalHeight, k = Math.min(1, 1600 / Math.max(sw, sh));
+        cv.width = Math.round(sw * k); cv.height = Math.round(sh * k);
+        ctx.drawImage(tpl, 0, 0, cv.width, cv.height);
+        const size0 = +$('tsize').value * (cv.width / 1080), maxW = cv.width * 0.9;
+        const { lines, size } = nameLines(getName(), maxW, size0);
+        ctx.fillStyle = $('tcolor').value; ctx.textAlign = 'center'; ctx.font = `800 ${size}px "Space Grotesk",sans-serif`;
+        ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 8;
+        const lh = size * 1.05, cy = pos.y * cv.height - ((lines.length - 1) * lh) / 2;
+        lines.forEach((ln, i) => ctx.fillText(ln, pos.x * cv.width, cy + i * lh + size * 0.35));
+        ctx.shadowBlur = 0; ctx.textAlign = 'left';
+      } else { cv.width = W; cv.height = H; ctx.fillStyle = '#0a1a3a'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#8892B0'; ctx.font = '600 34px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('Carga tu plantilla para empezar', W / 2, H / 2); ctx.textAlign = 'left'; }
+    }
+    updMsg();
+  }
+
+  // mensaje con el nombre
+  let msgTouched = false;
+  function defaultMsg() {
+    const n = ($('name').value.trim() ? titleCase($('name').value).split(' ')[0] : '');
+    return `¡Hola${n ? ' ' + n : ''}! 👋 Te invitamos al torneo HUMANO vs. IA ♟️🤖\n28 y 29 de octubre · Paraninfo Universitario UAGRM.\n\n👉 Únete al grupo oficial de WhatsApp:\n${GROUP}\n\n🔥 Juega tú también: https://chessia-tau.vercel.app`;
+  }
+  function updMsg() { if (!msgTouched) $('msg').value = defaultMsg(); }
+  $('msg').addEventListener('input', () => { msgTouched = true; });
+
+  $('name').addEventListener('input', draw); $('tone').addEventListener('change', draw);
+  $('tsize').addEventListener('input', draw); $('tcolor').addEventListener('change', draw);
+  document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', () => {
+    mode = document.querySelector('input[name=mode]:checked').value; $('custom').style.display = mode === 'custom' ? 'block' : 'none';
+    $('tplStatus').textContent = mode === 'official' ? '✓ Plantilla oficial Humano vs. IA' : (tpl ? '✓ Tu plantilla' : 'Carga tu plantilla'); draw();
+  }));
+  $('tplIn').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; try { tpl = await load(f); $('tplStatus').textContent = '✓ ' + f.name; pos.x = .5; pos.y = .5; draw(); } catch (er) { $('tplStatus').textContent = '⚠ No se pudo leer esa imagen'; } });
+  // arrastrar nombre en plantilla propia
+  let drag = false;
+  const mv = e => { const b = cv.getBoundingClientRect(); pos.x = Math.min(1, Math.max(0, (e.clientX - b.left) / b.width)); pos.y = Math.min(1, Math.max(0, (e.clientY - b.top) / b.height)); draw(); };
+  cv.addEventListener('pointerdown', e => { if (mode !== 'custom' || !tpl) return; drag = true; cv.setPointerCapture(e.pointerId); mv(e); });
+  cv.addEventListener('pointermove', e => { if (drag) mv(e); });
+  cv.addEventListener('pointerup', () => { drag = false; });
+
+  // descarga
+  const fname = () => 'invitacion-' + (getName().toLowerCase().replace(/[^a-z0-9áéíóúñ]+/gi, '-').replace(/^-|-$/g, '') || 'chessia') + '.png';
+  $('dl').addEventListener('click', async () => {
+    const b = await new Promise(r => cv.toBlob(r, 'image/png')), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = fname();
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  });
+
+  // países y envío
+  const COUNTRIES = [
+    ['🇧🇴 Bolivia +591', '591', '7XXXXXXX'], ['🇦🇷 Argentina +54', '54', '11 5555 1234'], ['🇧🇷 Brasil +55', '55', '11 91234 5678'],
+    ['🇨🇱 Chile +56', '56', '9 1234 5678'], ['🇵🇪 Perú +51', '51', '912 345 678'], ['🇵🇾 Paraguay +595', '595', '981 123 456'],
+    ['🇺🇾 Uruguay +598', '598', '91 234 567'], ['🇨🇴 Colombia +57', '57', '300 123 4567'], ['🇲🇽 México +52', '52', '55 1234 5678'],
+    ['🇪🇨 Ecuador +593', '593', '99 123 4567'], ['🇻🇪 Venezuela +58', '58', '412 123 4567'], ['🇺🇸 EE.UU./Canadá +1', '1', '415 555 2671'],
+    ['🇪🇸 España +34', '34', '612 345 678'], ['🌎 Otro (con código)', '', '+código y número']
+  ];
+  COUNTRIES.forEach((c, i) => { const o = document.createElement('option'); o.value = i; o.textContent = c[0]; $('cc').appendChild(o); });
+  function updHint() { const c = COUNTRIES[$('cc').value]; $('phone').placeholder = c[2]; $('phoneHint').textContent = c[1] ? 'Escribe solo el número local, sin el +' + c[1] + '.' : 'Escribe el número completo con el código del país (ej. +34 612 345 678).'; }
+  $('cc').addEventListener('change', updHint); updHint();
+  function normPhone(raw, idx) {
+    const cc = COUNTRIES[idx][1], v = (raw || '').trim(); let d = v.replace(/\D/g, ''); if (!d) return null;
+    if (v.startsWith('+') || d.startsWith('00') || !cc) { if (d.startsWith('00')) d = d.slice(2); return d.length >= 9 && d.length <= 15 ? d : null; }
+    if (cc === '591') { if (d.length === 11 && d.startsWith('591')) return d; return d.length === 8 && /^[67]/.test(d) ? '591' + d : null; }
+    if (d.startsWith(cc) && d.length >= cc.length + 8) d = d.slice(cc.length);
+    d = d.replace(/^0+/, ''); if (cc === '54' && !d.startsWith('9')) d = '9' + d;
+    const full = cc + d; return full.length >= 9 && full.length <= 15 ? full : null;
+  }
+  $('send').addEventListener('click', async () => {
+    const st = $('sendStatus'), num = normPhone($('phone').value, $('cc').value);
+    if (!$('name').value.trim()) { st.style.color = '#ff7a90'; st.textContent = '⚠ Escribe primero el nombre de la persona.'; $('name').focus(); return; }
+    if (!num) { st.style.color = '#ff7a90'; st.textContent = COUNTRIES[$('cc').value][1] === '591' ? '⚠ Escribe un celular boliviano de 8 dígitos (empieza con 6 o 7).' : '⚠ Revisa el número: parece incompleto.'; $('phone').focus(); return; }
+    st.style.color = ''; st.textContent = 'Preparando la invitación…';
+    const url = 'https://wa.me/' + num + '?text=' + encodeURIComponent($('msg').value.trim());
+    let copied = false;
+    try { const png = await new Promise(r => cv.toBlob(r, 'image/png')); await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]); copied = true; } catch (e) {}
+    if (!copied) $('dl').click();
+    st.textContent = copied ? '✓ Invitación copiada. En WhatsApp: mantén pulsado → Pegar → Enviar.' : '✓ Invitación descargada. Adjúntala en el chat que se abrirá.';
+    setTimeout(() => { location.href = url; }, 900);
+  });
+
+  // arranque: marco oficial + fuentes antes de dibujar
+  (async () => {
+    try { const r = await fetch('../marco/marco-chessia.webp', { cache: 'force-cache' }); frame = await load(await r.blob()); } catch (e) { $('tplStatus').textContent = '⚠ No se pudo cargar el marco oficial'; }
+    try { await Promise.all([document.fonts.load('800 60px "Space Grotesk"'), document.fonts.load('700 25px "JetBrains Mono"')]); } catch (e) {}
+    draw();
+  })();
+  draw();
+  window.inv = { draw };
+})();
+</script>
+</body>
+</html>
