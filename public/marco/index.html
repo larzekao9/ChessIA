@@ -4,6 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Marco de fotos · ChessIA</title>
+<style>html{visibility:hidden}</style>
+<script src="/acceso.js"></script>
+<script>ChessiaAuth.guard();</script>
 <meta name="description" content="Pon el marco de ChessIA a cualquier foto y descárgala lista para compartir por WhatsApp." />
 <meta name="theme-color" content="#060d17" />
 <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -54,7 +57,7 @@ select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-
 </head>
 <body>
 <main>
-<header><div class="brand">CHESS<b>IA</b></div><a class="back" href="/">← LANDING</a></header>
+<header><div class="brand">CHESS<b>IA</b></div><span style="display:flex;gap:6px"><a class="back" href="../invitacion/">💌 INVITACIONES</a><a class="back" href="/" onclick="ChessiaAuth.logout()">🔒 SALIR</a></span></header>
 <h1>Marco de fotos</h1>
 <p class="sub">Carga el marco, carga la foto, ajústala y descarga la imagen lista para pasarla por WhatsApp. Todo pasa en tu dispositivo: no se sube nada.</p>
 
