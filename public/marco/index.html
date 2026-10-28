@@ -42,6 +42,12 @@ label.sl{display:flex;align-items:center;gap:10px;font:700 11px "JetBrains Mono"
 input[type=range]{flex:1;accent-color:var(--g)}
 .chk{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:10px;color:#cfd8e6}
 details.more{margin-top:10px}details.more summary{cursor:pointer;color:var(--c);font:700 11px "JetBrains Mono",monospace}
+.fld{display:block;font:700 11px "JetBrains Mono",monospace;color:var(--c);margin:10px 0 6px}
+.phone{display:flex;align-items:center;gap:8px;background:#102236;border:1px solid rgba(0,210,255,.4);border-radius:12px;padding:0 12px}
+.phone span{font:700 13px "JetBrains Mono",monospace;white-space:nowrap}
+.phone input,textarea{background:transparent;border:0;color:#fff;font:600 16px "JetBrains Mono",monospace;padding:13px 0;width:100%;outline:0}
+textarea{background:#102236;border:1px solid rgba(0,210,255,.4);border-radius:12px;padding:12px;font:500 14px "Space Grotesk",sans-serif;resize:vertical}
+.phone:focus-within,textarea:focus{border-color:var(--g)}
 select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-radius:10px;padding:8px;font:600 12px "JetBrains Mono",monospace}
 </style>
 </head>
@@ -98,6 +104,16 @@ select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-
   </div>
   <p class="hint" id="shareHint"></p>
 </section>
+<section class="card" id="sendCard">
+  <div class="step"><i>4</i> ENVIAR POR WHATSAPP</div>
+  <label class="fld" for="phone">Número de la persona (Bolivia)</label>
+  <div class="phone"><span>🇧🇴 +591</span><input id="phone" type="tel" inputmode="numeric" autocomplete="off" placeholder="7XXXXXXX" maxlength="16" /></div>
+  <label class="fld" for="msg">Mensaje</label>
+  <textarea id="msg" rows="3">¡Hola! 👋 Te comparto tu foto del torneo HUMANO vs. IA ♟️🤖 28 y 29 de octubre · Paraninfo UAGRM. Juega tú también: https://chessia-tau.vercel.app</textarea>
+  <button class="btn wa" id="send" type="button" disabled style="width:100%;margin-top:12px">💬 Enviar por WhatsApp</button>
+  <div class="status" id="sendStatus"></div>
+  <p class="hint">Se abre el chat de esa persona en <b>tu WhatsApp</b> (con tu número) y la foto queda copiada: mantén pulsado el mensaje, toca <b>Pegar</b> y envía. Si el número es de otro país, escríbelo completo con el código (ej. 54911…).</p>
+</section>
 </main>
 
 <script>
@@ -144,7 +160,7 @@ select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-
     const ready = !!(frame && photo);
     $('empty').style.display = photo ? 'none' : 'grid';
     if (!photo && win) { ctx.save(); ctx.fillStyle = 'rgba(0,230,118,.10)'; ctx.fillRect(win.x, win.y, win.w, win.h); ctx.restore(); }
-    $('dl').disabled = !ready; $('share').disabled = !ready;
+    $('dl').disabled = !ready; $('share').disabled = !ready; $('send').disabled = !ready;
   }
 
   // ventana transparente del marco: caja de la región transparente que contiene el centro
@@ -227,6 +243,31 @@ select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-
     $('dl').click(); $('shareHint').textContent = 'Tu navegador no permite compartir directo: se descargó la imagen, adjúntala en WhatsApp.';
   });
   if (!(navigator.canShare)) $('shareHint').textContent = 'En el celular, "Compartir" abre WhatsApp con la foto. En la computadora se descarga.';
+
+  // --- enviar por WhatsApp al número indicado
+  function normPhone(v) {
+    let d = (v || '').replace(/\D/g, '');
+    if (d.startsWith('00')) d = d.slice(2);
+    if (d.length === 8 && /^[67]/.test(d)) return '591' + d;      // celular de Bolivia
+    if (d.length === 11 && d.startsWith('591')) return d;            // Bolivia con código
+    if (d.length >= 9 && d.length <= 15) return d;                   // otro país, ya con código
+    return null;
+  }
+  $('send').addEventListener('click', async () => {
+    const num = normPhone($('phone').value), stEl = $('sendStatus');
+    if (!num) { stEl.style.color = '#ff7a90'; stEl.textContent = '⚠ Escribe un celular boliviano de 8 dígitos (empieza con 6 o 7).'; $('phone').focus(); return; }
+    stEl.style.color = ''; stEl.textContent = 'Preparando la foto…';
+    const url = 'https://wa.me/' + num + '?text=' + encodeURIComponent($('msg').value.trim());
+    let copied = false;
+    try {
+      const png = await new Promise(r => cv.toBlob(r, 'image/png'));
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
+      copied = true;
+    } catch (e) {}
+    if (!copied) { $('fmt').value = 'png'; $('dl').click(); }
+    stEl.textContent = copied ? '✓ Foto copiada. En WhatsApp: mantén pulsado → Pegar → Enviar.' : '✓ Foto descargada. Adjúntala en el chat que se abrirá.';
+    setTimeout(() => { location.href = url; }, 900);
+  });
 
   fitCanvas(); draw(); loadOfficial();
   window.marco = { setFrame, setPhoto: img => { photo = img; Object.assign(st, { x: 0, y: 0, zoom: 1, rot: 0 }); draw(); }, draw, get win() { return win; } };
