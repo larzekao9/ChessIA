@@ -105,6 +105,19 @@ a[href*="unirme%20al%20grupo"]:not(#wa-fab) .wa-emoji { display: inline-block; a
 @keyframes dockArrow{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
 .dock-cta{animation:waPulse 2.2s ease-out infinite}
 </style>
+<style>
+.devs{position:relative;padding:16px 14px 14px;border-radius:16px;background:rgba(11,21,35,.82);border:1px solid rgba(0,210,255,.25);text-align:center;overflow:hidden}
+.devs::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,transparent,#00E676,#00D2FF,transparent);animation:devsBar 3.2s ease-in-out infinite}
+@keyframes devsBar{0%,100%{opacity:.35}50%{opacity:1}}
+.devs-tag{display:inline-flex;align-items:center;gap:6px;font:700 9px "JetBrains Mono",monospace;letter-spacing:.18em;color:#00D2FF;margin-bottom:12px}
+.devs-dot{width:6px;height:6px;border-radius:50%;background:#00E676;box-shadow:0 0 8px #00E676;animation:pulseGlow 1.6s ease-in-out infinite}
+.devs-grid{display:grid;gap:8px}
+.dev{display:flex;align-items:center;gap:10px;text-align:left;padding:9px 11px;border-radius:12px;background:rgba(2,10,20,.7);border:1px solid rgba(0,230,118,.28);transition:transform .25s,border-color .25s,box-shadow .25s}
+.dev:hover,.dev:active{transform:translateY(-2px);border-color:#00E676;box-shadow:0 0 16px rgba(0,230,118,.3)}
+.dev-avatar{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font:800 12px "JetBrains Mono",monospace;color:#04200f;background:linear-gradient(135deg,#00E676,#00D2FF);box-shadow:0 0 14px rgba(0,230,118,.5)}
+.dev-name{font:800 12.5px "Space Grotesk",sans-serif;color:#fff;line-height:1.2}
+.dev-reg{font:600 10px "JetBrains Mono",monospace;color:#00D2FF;margin-top:2px}
+</style>
 </head>
 <body class="bg-bgDark text-slate-100 font-sans min-h-screen antialiased selection:bg-neonGreen selection:text-black pb-28 cyber-grid-bg">
 <!-- 1. HEADER & STATUS HUD -->
@@ -1308,6 +1321,14 @@ window.addEventListener('DOMContentLoaded', () => requestAnimationFrame(() => se
 <a class="block w-full py-2.5 px-3 rounded-xl bg-[#0b1523] hover:bg-cyan-950 border border-cyan-400/50 text-cyan-300 font-bold text-xs uppercase tracking-wider text-center transition active:scale-95 font-mono" href="https://wa.me/59178576780?text=Hola,%20deseo%20unirme%20al%20grupo%20oficial%20de%20WhatsApp%20ChessIA" rel="noopener noreferrer" target="_blank">
 <span><span class="wa-emoji">💬</span> [ ÚNETE AL GRUPO DE WHATSAPP ]</span>
 </a>
+</div>
+</section>
+<!-- Desarrolladores -->
+<section class="devs" data-purpose="developers" aria-label="Desarrolladores">
+<div class="devs-tag"><span class="devs-dot"></span>&lt;/&gt; DESARROLLADO POR</div>
+<div class="devs-grid">
+<div class="dev"><span class="dev-avatar">LA</span><div><div class="dev-name">Arze Kao Luis Ángel</div><div class="dev-reg">Reg. 222007508</div></div></div>
+<div class="dev"><span class="dev-avatar">HS</span><div><div class="dev-name">Suárez Burgos Hebert</div><div class="dev-reg">UAGRM · FICCT</div></div></div>
 </div>
 </section>
 <!-- Institutional Footer Credits -->
