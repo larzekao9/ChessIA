@@ -1,0 +1,269 @@
+@import "tailwindcss";
+
+@theme {
+  --color-on-primary-container: #00626e;
+  --color-background: #111319;
+  --color-surface-container-high: #282a30;
+  --color-surface-bright: #373940;
+  --color-tertiary-fixed-dim: #ffb778;
+  --color-tertiary-container: #ffc594;
+  --color-secondary-fixed-dim: #cdbdff;
+  --color-on-secondary: #370096;
+  --color-secondary-fixed: #e8deff;
+  --color-surface-container-lowest: #0c0e14;
+  --color-primary: #c3f5ff;
+  --color-on-tertiary-fixed-variant: #6c3a00;
+  --color-on-error: #690005;
+  --color-primary-fixed-dim: #00daf3;
+  --color-surface-container: #1e1f26;
+  --color-secondary-container: #5203d5;
+  --color-inverse-primary: #006875;
+  --color-tertiary: #ffe9d9;
+  --color-surface-dim: #111319;
+  --color-inverse-surface: #e2e2eb;
+  --color-on-tertiary: #4c2700;
+  --color-on-error-container: #ffdad6;
+  --color-on-primary-fixed-variant: #004f58;
+  --color-surface-container-highest: #33343b;
+  --color-secondary: #cdbdff;
+  --color-on-background: #e2e2eb;
+  --color-error: #ffb4ab;
+  --color-surface-tint: #00daf3;
+  --color-on-surface: #e2e2eb;
+  --color-on-tertiary-fixed: #2e1500;
+  --color-on-primary: #00363d;
+  --color-on-surface-variant: #bac9cc;
+  --color-on-primary-fixed: #001f24;
+  --color-on-secondary-fixed-variant: #4f00d0;
+  --color-primary-fixed: #9cf0ff;
+  --color-surface-variant: #33343b;
+  --color-primary-container: #00e5ff;
+  --color-error-container: #93000a;
+  --color-inverse-on-surface: #2e3037;
+  --color-surface-container-low: #191b22;
+  --color-on-secondary-container: #c0acff;
+  --color-on-secondary-fixed: #20005f;
+  --color-outline: #849396;
+  --color-tertiary-fixed: #ffdcc1;
+  --color-surface: #111319;
+  --color-outline-variant: #3b494c;
+  --color-on-tertiary-container: #864a00;
+
+  /* Acentos "neón" — solo para la consola de Razonamiento Neuronal (estética
+     tipo laboratorio holográfico, ver frontend/vista razonamiento neuronal/code.html).
+     No reemplazan la paleta M3 de arriba, que sigue siendo la del resto de la app. */
+  --color-neon-cyan: #00e5ff;
+  --color-neon-blue: #0070f3;
+  --color-neon-purple: #7c4dff;
+  --color-neon-orange: #ff9100;
+  --color-neon-lime: #76ff03;
+
+  --spacing-space-md: 1rem;
+  --spacing-space-sm: 0.75rem;
+  --spacing-space-2xs: 0.25rem;
+  --spacing-space-lg: 1.5rem;
+  --spacing-panel-padding: 1.25rem;
+  --spacing-space-2xl: 3rem;
+  --spacing-space-xl: 2rem;
+  --spacing-telemetry-gutter: 0.5rem;
+  --spacing-space-xs: 0.5rem;
+  --spacing-canvas-node-gap: 2.5rem;
+
+  --font-display-lg: "Space Grotesk", sans-serif;
+  --font-headline-lg: "Space Grotesk", sans-serif;
+  --font-body-sm: "Space Grotesk", sans-serif;
+  --font-mono-metric: "JetBrains Mono", monospace;
+  --font-headline-xl: "Space Grotesk", sans-serif;
+  --font-mono-label: "JetBrains Mono", monospace;
+  --font-body-lg: "Space Grotesk", sans-serif;
+  --font-headline-sm: "Space Grotesk", sans-serif;
+  --font-headline-xl-mobile: "Space Grotesk", sans-serif;
+  --font-mono-micro: "JetBrains Mono", monospace;
+  
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 56px;
+  --text-display-lg--letter-spacing: -0.03em;
+  --text-display-lg--font-weight: 600;
+
+  --text-headline-lg: 24px;
+  --text-headline-lg--line-height: 32px;
+  --text-headline-lg--letter-spacing: -0.015em;
+  --text-headline-lg--font-weight: 500;
+
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--letter-spacing: 0em;
+  --text-body-sm--font-weight: 400;
+
+  --text-mono-metric: 15px;
+  --text-mono-metric--line-height: 22px;
+  --text-mono-metric--letter-spacing: -0.01em;
+  --text-mono-metric--font-weight: 500;
+
+  --text-headline-xl: 32px;
+  --text-headline-xl--line-height: 40px;
+  --text-headline-xl--letter-spacing: -0.02em;
+  --text-headline-xl--font-weight: 600;
+
+  --text-mono-label: 12px;
+  --text-mono-label--line-height: 16px;
+  --text-mono-label--letter-spacing: 0.04em;
+  --text-mono-label--font-weight: 400;
+
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 24px;
+  --text-body-lg--letter-spacing: 0em;
+  --text-body-lg--font-weight: 400;
+
+  --text-headline-sm: 18px;
+  --text-headline-sm--line-height: 26px;
+  --text-headline-sm--letter-spacing: 0em;
+  --text-headline-sm--font-weight: 500;
+
+  --text-headline-xl-mobile: 26px;
+  --text-headline-xl-mobile--line-height: 34px;
+  --text-headline-xl-mobile--letter-spacing: -0.02em;
+  --text-headline-xl-mobile--font-weight: 600;
+
+  --text-mono-micro: 10px;
+  --text-mono-micro--line-height: 14px;
+  --text-mono-micro--letter-spacing: 0.08em;
+  --text-mono-micro--font-weight: 500;
+}
+
+/* Giro tipo "moneda" al cambiar de pieza — banner "Aprendé cada pieza"
+   (PanelAprendizaje.jsx). Se retriggerea a mano sacando/reponiendo esta
+   clase (ver BannerPiezas) porque una animación CSS no se reinicia sola si
+   la clase ya estaba puesta. */
+@keyframes moneda-flip {
+  0% {
+    transform: rotateY(0deg) scale(1);
+  }
+  50% {
+    transform: rotateY(180deg) scale(0.82);
+  }
+  100% {
+    transform: rotateY(360deg) scale(1);
+  }
+}
+
+.moneda-flip {
+  animation: moneda-flip 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Manchas de luz de fondo, a la deriva — banner "Aprendé cada pieza"
+   (PanelAprendizaje.jsx). Le dan vida al panel sin competir con el
+   contenido (van detrás, bien difuminadas). */
+@keyframes fondo-banner-deriva-1 {
+  0%, 100% {
+    transform: translate(-8%, -8%) scale(1);
+  }
+  50% {
+    transform: translate(10%, 6%) scale(1.15);
+  }
+}
+
+@keyframes fondo-banner-deriva-2 {
+  0%, 100% {
+    transform: translate(8%, 10%) scale(1);
+  }
+  50% {
+    transform: translate(-10%, -8%) scale(1.1);
+  }
+}
+
+.fondo-banner-blob-1 {
+  animation: fondo-banner-deriva-1 16s ease-in-out infinite;
+}
+
+.fondo-banner-blob-2 {
+  animation: fondo-banner-deriva-2 20s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fondo-banner-blob-1,
+  .fondo-banner-blob-2 {
+    animation: none;
+  }
+}
+
+/* Tarjeta de login en pantallas bajas: menos relleno y espacio entre campos para que entre sin
+   desplazarse. Sin capa, como la barra lateral de abajo. */
+@media (max-height: 860px) {
+  .tarjeta-login {
+    padding: 1rem 1.25rem;
+  }
+  .tarjeta-login form > * + * {
+    margin-top: 0.625rem;
+  }
+}
+
+/* Barra lateral en pantallas bajas: menos aire entre marca, opciones y pie para que el menú
+   entre sin desplazarse. Va sin capa para ganar a las utilidades de Tailwind. Si aun así no
+   entra, `.barra-lateral nav` tiene desplazamiento propio y el pie queda fijo abajo. */
+@media (max-height: 800px) {
+  .barra-lateral {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+  .barra-lateral > div {
+    gap: 0.5rem;
+  }
+  .barra-lateral .boton-nav {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+}
+
+
+/* Hoja imprimible (informe de progreso de un alumno, `paginas/Progreso/InformeAlumno.jsx`): al imprimir o guardar como PDF queda solo
+   el informe, en papel blanco y letra oscura, sin botones ni barras de desplazamiento. */
+@media print {
+  body > *:not(#informe-impreso) {
+    display: none !important;
+  }
+  body {
+    overflow: visible !important;
+    background: #fff !important;
+  }
+  #informe-impreso {
+    position: static !important;
+    display: block !important;
+    padding: 0 !important;
+    background: #fff !important;
+    backdrop-filter: none !important;
+  }
+  #informe-impreso .hoja-informe {
+    --color-on-surface: #111827;
+    --color-on-surface-variant: #4b5563;
+    --color-surface-container-low: #ffffff;
+    --color-surface-container: #f3f4f6;
+    --color-surface-container-high: #e5e7eb;
+    --color-surface-container-lowest: #ffffff;
+    --color-primary: #00626e;
+    --color-primary-container: #cdeff4;
+    --color-tertiary-fixed-dim: #8a4b00;
+    --color-tertiary-container: #ffe3c8;
+    --color-outline-variant: #9ca3af;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #111827;
+  }
+  #informe-impreso .no-imprimir {
+    display: none !important;
+  }
+  #informe-impreso .hoja-informe section,
+  #informe-impreso .hoja-informe header {
+    break-inside: avoid;
+  }
+  #informe-impreso .hoja-informe,
+  #informe-impreso .hoja-informe * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
