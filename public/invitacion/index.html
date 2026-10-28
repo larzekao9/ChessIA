@@ -142,9 +142,12 @@ input[type=range]{flex:1;accent-color:var(--g)}
     let size = 58; ctx.font = `800 ${size}px ${fam}`;
     while (ctx.measureText(text).width > NAME.maxW && size > 30) { size -= 2; ctx.font = `800 ${size}px ${fam}`; }
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.shadowColor = 'rgba(61,218,167,.55)'; ctx.shadowBlur = 14;
-    ctx.fillStyle = NAME.color; ctx.fillText(text, NAME.cx, NAME.base);
-    ctx.shadowBlur = 0; ctx.textAlign = 'left';
+    // contorno blanco (se dibuja primero; el relleno turquesa lo deja visible solo por fuera)
+    ctx.lineJoin = 'round'; ctx.miterLimit = 2; ctx.lineWidth = Math.max(3.5, size * 0.11); ctx.strokeStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 8;
+    ctx.strokeText(text, NAME.cx, NAME.base);
+    ctx.shadowBlur = 0; ctx.fillStyle = NAME.color; ctx.fillText(text, NAME.cx, NAME.base);
+    ctx.textAlign = 'left';
   }
 
   function draw() {
