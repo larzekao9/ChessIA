@@ -41,6 +41,7 @@ canvas:active{cursor:grabbing}
 label.sl{display:flex;align-items:center;gap:10px;font:700 11px "JetBrains Mono",monospace;color:var(--c);margin-top:12px}
 input[type=range]{flex:1;accent-color:var(--g)}
 .chk{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:10px;color:#cfd8e6}
+details.more{margin-top:10px}details.more summary{cursor:pointer;color:var(--c);font:700 11px "JetBrains Mono",monospace}
 select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-radius:10px;padding:8px;font:600 12px "JetBrains Mono",monospace}
 </style>
 </head>
@@ -51,30 +52,34 @@ select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-
 <p class="sub">Carga el marco, carga la foto, ajústala y descarga la imagen lista para pasarla por WhatsApp. Todo pasa en tu dispositivo: no se sube nada.</p>
 
 <section class="card">
-  <div class="step"><i>1</i> MARCO (PNG con el centro transparente)</div>
-  <div class="row">
-    <label class="btn grow" for="frameIn">🖼️ Cargar marco</label>
-    <button class="btn sec grow" id="defaultFrame" type="button">✨ Usar marco ChessIA</button>
-  </div>
-  <input id="frameIn" type="file" accept="image/png,image/webp,image/*" />
-  <label class="chk"><input type="checkbox" id="remember" checked /> Recordar el marco en este dispositivo</label>
-  <div class="status" id="frameStatus"></div>
+  <div class="step"><i>1</i> MARCO</div>
+  <div class="status" id="frameStatus" style="margin:0">Cargando marco oficial…</div>
+  <details class="more">
+    <summary>Usar otro marco (opcional)</summary>
+    <div class="row" style="margin-top:10px">
+      <label class="btn sec grow" for="frameIn">🖼️ Cargar otro marco PNG</label>
+      <button class="btn sec grow" id="defaultFrame" type="button">↺ Volver al oficial</button>
+    </div>
+    <input id="frameIn" type="file" accept="image/png,image/webp,image/*" />
+    <p class="hint">Debe ser un PNG/WebP con la ventana de la foto transparente.</p>
+  </details>
 </section>
 
 <section class="card">
-  <div class="step"><i>2</i> FOTO</div>
+  <div class="step"><i>2</i> FOTO (mejor horizontal)</div>
   <div class="row">
     <label class="btn grow" for="photoIn">📷 Cargar foto</label>
   </div>
   <input id="photoIn" type="file" accept="image/*" />
   <div class="status" id="photoStatus"></div>
+  <p class="hint">La ventana del marco es <b>horizontal</b> (960×580, casi 16:9). Toma la foto con el iPhone <b>acostado</b>.</p>
 </section>
 
 <section class="card">
   <div class="step"><i>3</i> AJUSTA Y DESCARGA</div>
   <div class="stage" id="stage">
     <canvas id="cv" width="1080" height="1080"></canvas>
-    <div class="empty" id="empty">Carga un marco y una foto<br/>para ver el resultado aquí</div>
+    <div class="empty" id="empty">Carga una foto<br/>para verla dentro del marco</div>
   </div>
   <p class="hint">Arrastra la foto para moverla · pellizca o usa el control para acercar.</p>
   <label class="sl">ZOOM <input type="range" id="zoom" min="1" max="4" step="0.01" value="1" /></label>
@@ -82,7 +87,7 @@ select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-
     <button class="btn sec grow" id="rot" type="button">↻ Girar</button>
     <button class="btn sec grow" id="reset" type="button">⟲ Centrar</button>
   </div>
-  <label class="chk"><input type="checkbox" id="over" /> Foto por encima del marco (si el marco no es transparente)</label>
+  <label class="chk"><input type="checkbox" id="over" /> Foto por encima del marco (solo si el marco no es transparente)</label>
   <div class="row" style="margin-top:12px;align-items:center">
     <span class="hint" style="margin:0">Formato:</span>
     <select id="fmt"><option value="png">PNG (máxima calidad)</option><option value="jpg">JPG (más liviano)</option></select>
@@ -117,10 +122,13 @@ select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-
   }
   function drawPhoto() {
     const { w: iw, h: ih } = size(photo), odd = st.rot % 2 === 1;
-    const pw = odd ? ih : iw, ph = odd ? iw : ih;
-    const base = Math.max(cv.width / pw, cv.height / ph), s = base * st.zoom;
+    const pw = odd ? ih : iw, ph = odd ? iw : ih, wn = win || { x: 0, y: 0, w: cv.width, h: cv.height };
+    const s = Math.max(wn.w / pw, wn.h / ph) * st.zoom;
+    const mx = Math.max(0, (pw * s - wn.w) / 2), my = Math.max(0, (ph * s - wn.h) / 2);
+    st.x = Math.min(mx, Math.max(-mx, st.x)); st.y = Math.min(my, Math.max(-my, st.y));
     ctx.save();
-    ctx.translate(cv.width / 2 + st.x, cv.height / 2 + st.y);
+    if ($('over').checked) { ctx.beginPath(); ctx.rect(wn.x, wn.y, wn.w, wn.h); ctx.clip(); }
+    ctx.translate(wn.x + wn.w / 2 + st.x, wn.y + wn.h / 2 + st.y);
     ctx.rotate(st.rot * Math.PI / 2);
     ctx.scale(s, s);
     ctx.drawImage(photo, -iw / 2, -ih / 2);
@@ -134,56 +142,50 @@ select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-
     if (frame) ctx.drawImage(frame, 0, 0, cv.width, cv.height);
     if (photo && over) drawPhoto();
     const ready = !!(frame && photo);
-    $('empty').style.display = (frame || photo) ? 'none' : 'grid';
+    $('empty').style.display = photo ? 'none' : 'grid';
+    if (!photo && win) { ctx.save(); ctx.fillStyle = 'rgba(0,230,118,.10)'; ctx.fillRect(win.x, win.y, win.w, win.h); ctx.restore(); }
     $('dl').disabled = !ready; $('share').disabled = !ready;
   }
 
-  // --- marco por defecto (generado, centro transparente)
-  function makeDefaultFrame() {
-    const S = 1080, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d');
-    const bar = 150;
-    g.fillStyle = '#060d17'; g.fillRect(0, S - bar, S, bar);                // franja inferior
-    g.lineWidth = 14; g.strokeStyle = '#00E676'; g.shadowColor = '#00E676'; g.shadowBlur = 28;
-    g.strokeRect(14, 14, S - 28, S - 28 - 0);
-    g.shadowBlur = 0; g.lineWidth = 4; g.strokeStyle = '#00D2FF'; g.strokeRect(36, 36, S - 72, S - bar - 60);
-    const gr = g.createLinearGradient(0, S - bar, S, S - bar); gr.addColorStop(0, '#00E676'); gr.addColorStop(1, '#00D2FF');
-    g.fillStyle = gr; g.fillRect(0, S - bar, S, 6);
-    g.fillStyle = '#fff'; g.font = '800 64px "JetBrains Mono",monospace'; g.textAlign = 'center';
-    g.fillText('CHESS', S / 2 - 62, S - bar + 72); g.fillStyle = '#00E676'; g.fillText('IA', S / 2 + 142, S - bar + 72);
-    g.fillStyle = '#00D2FF'; g.font = '700 28px "JetBrains Mono",monospace';
-    g.fillText('HUMANO vs. IA  ·  28 y 29 OCT  ·  PARANINFO UAGRM', S / 2, S - bar + 118);
-    // esquinas
-    g.strokeStyle = '#00E676'; g.lineWidth = 10;
-    [[36, 36, 1, 1], [S - 36, 36, -1, 1], [36, S - bar - 24, 1, -1], [S - 36, S - bar - 24, -1, -1]].forEach(([x, y, dx, dy]) => { g.beginPath(); g.moveTo(x, y + 70 * dy); g.lineTo(x, y); g.lineTo(x + 70 * dx, y); g.stroke(); });
-    return createImageBitmap(c);
+  // ventana transparente del marco: caja de la región transparente que contiene el centro
+  let win = null;
+  function detectWindow() {
+    win = { x: 0, y: 0, w: cv.width, h: cv.height };
+    if (!frame) return;
+    const sc = 0.25, w = Math.max(8, Math.round(cv.width * sc)), h = Math.max(8, Math.round(cv.height * sc));
+    const t = document.createElement('canvas'); t.width = w; t.height = h; const tc = t.getContext('2d', { willReadFrequently: true });
+    tc.drawImage(frame, 0, 0, w, h);
+    const d = tc.getImageData(0, 0, w, h).data, clear = i => d[i * 4 + 3] < 24;
+    let sx = -1, sy = -1;
+    for (let r = 0; r < Math.max(w, h) / 2 && sx < 0; r++) for (const [dx, dy] of [[r, 0], [-r, 0], [0, r], [0, -r]]) { const x = (w >> 1) + dx, y = (h >> 1) + dy; if (x >= 0 && y >= 0 && x < w && y < h && clear(y * w + x)) { sx = x; sy = y; break; } }
+    if (sx < 0) return;                                  // marco sin ventana transparente → toda la imagen
+    const seen = new Uint8Array(w * h), st2 = [sy * w + sx]; seen[sy * w + sx] = 1;
+    let x0 = w, y0 = h, x1 = 0, y1 = 0;
+    while (st2.length) {
+      const i = st2.pop(), x = i % w, y = (i / w) | 0;
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      for (const j of [i + 1, i - 1, i + w, i - w]) { if (j < 0 || j >= w * h || seen[j] || !clear(j)) continue; if ((j === i + 1 && x === w - 1) || (j === i - 1 && x === 0)) continue; seen[j] = 1; st2.push(j); }
+    }
+    win = { x: Math.floor(x0 / sc) - 2, y: Math.floor(y0 / sc) - 2, w: Math.ceil((x1 - x0 + 1) / sc) + 4, h: Math.ceil((y1 - y0 + 1) / sc) + 4 };
   }
 
-  async function setFrame(img, label, persist) {
-    frame = img; fitCanvas(); draw();
-    const { w, h } = size(img); $('frameStatus').textContent = '✓ ' + label + ' · ' + w + '×' + h;
-    if (persist && $('remember').checked) saveFrame(img);
+  async function setFrame(img, label) {
+    frame = img; fitCanvas(); detectWindow(); draw();
+    const { w, h } = size(img); $('frameStatus').textContent = '✓ ' + label + ' · ' + w + '×' + h + (win && win.w < cv.width ? ' · ventana ' + win.w + '×' + win.h : '');
   }
-  function saveFrame(img) {
-    try {
-      const c = document.createElement('canvas'); const { w, h } = size(img); const k = Math.min(1, MAXSIDE / Math.max(w, h));
-      c.width = Math.round(w * k); c.height = Math.round(h * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      const url = c.toDataURL('image/png'); if (url.length < 4.5e6) localStorage.setItem('chessia_marco', url);
-    } catch (e) {}
-  }
-  async function restoreFrame() {
-    try {
-      const url = localStorage.getItem('chessia_marco'); if (!url) return;
-      const img = new Image(); img.onload = () => setFrame(img, 'Marco guardado', false); img.src = url;
-    } catch (e) {}
+  const OFFICIAL = 'marco-chessia.webp';
+  async function loadOfficial() {
+    try { const r = await fetch(OFFICIAL, { cache: 'force-cache' }); await setFrame(await load(await r.blob()), 'Marco oficial Humano vs. IA'); }
+    catch (e) { $('frameStatus').textContent = '⚠ No se pudo cargar el marco oficial. Usa "otro marco".'; }
   }
 
-  $('frameIn').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; try { await setFrame(await load(f), f.name, true); } catch (er) { $('frameStatus').textContent = '⚠ No se pudo leer ese archivo'; } });
+  $('frameIn').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; try { await setFrame(await load(f), f.name); } catch (er) { $('frameStatus').textContent = '⚠ No se pudo leer ese archivo'; } });
   $('photoIn').addEventListener('change', async e => {
     const f = e.target.files[0]; if (!f) return;
     try { photo = await load(f); Object.assign(st, { x: 0, y: 0, zoom: 1, rot: 0 }); $('zoom').value = 1; const { w, h } = size(photo); $('photoStatus').textContent = '✓ ' + f.name + ' · ' + w + '×' + h; draw(); }
     catch (er) { $('photoStatus').textContent = '⚠ No se pudo leer esa foto'; }
   });
-  $('defaultFrame').addEventListener('click', async () => { await setFrame(await makeDefaultFrame(), 'Marco ChessIA', false); $('over').checked = false; draw(); });
+  $('defaultFrame').addEventListener('click', () => { $('over').checked = false; loadOfficial(); });
   $('over').addEventListener('change', draw);
   $('zoom').addEventListener('input', e => { st.zoom = +e.target.value; draw(); });
   $('rot').addEventListener('click', () => { st.rot = (st.rot + 1) % 4; draw(); });
@@ -226,8 +228,8 @@ select{background:#102236;color:#fff;border:1px solid rgba(0,210,255,.4);border-
   });
   if (!(navigator.canShare)) $('shareHint').textContent = 'En el celular, "Compartir" abre WhatsApp con la foto. En la computadora se descarga.';
 
-  fitCanvas(); draw(); restoreFrame();
-  window.marco = { setFrame, setPhoto: img => { photo = img; draw(); }, makeDefaultFrame, draw };
+  fitCanvas(); draw(); loadOfficial();
+  window.marco = { setFrame, setPhoto: img => { photo = img; Object.assign(st, { x: 0, y: 0, zoom: 1, rot: 0 }); draw(); }, draw, get win() { return win; } };
 })();
 </script>
 </body>
