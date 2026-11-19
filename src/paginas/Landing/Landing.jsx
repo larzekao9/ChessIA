@@ -18,6 +18,9 @@ const enlaceWa = (mensaje) => `https://wa.me/${WHATSAPP_ORGANIZACION}?text=${enc
 const URL_PLATAFORMA = 'https://home-lab.tail3b5ebb.ts.net/';
 const WA_GRUPO = 'https://chat.whatsapp.com/F3FbfRMJ5kp3J3zHkbCEII?mode=gi_t';
 const WA_INFO = WA_GRUPO;
+// Canales de marketing (sección superior). TikTok queda «próximamente» hasta tener la cuenta.
+const FACEBOOK_URL = 'https://www.facebook.com/share/1Rbq9ZmQud/';
+const WA_CORPORATIVO = 'https://wa.me/59169215158';
 
 // Fuerza medida de Turing v6 (Elo relativo a Stockfish calibrado, 120 partidas por medición; no es un Elo oficial).
 const TURING = { version: 'v6', partidas: '35.000', eloPartidas: '2200+', coincidencia: '49 %', eloRed: 1355, eloBusqueda: 1808, rangoBusqueda: '1737–1878' };
@@ -151,6 +154,26 @@ export default function Landing({ alRegistrarse: alRegistrarseApp = null, alIngr
       </header>
 
       <main className="max-w-md lg:max-w-6xl mx-auto px-4 lg:px-8 pt-3 lg:pt-10 space-y-6 lg:space-y-16">
+        {/* Canales de marketing: lo primero que se ve */}
+        <section aria-label="Canales oficiales" className="lp-vidrio border border-cyan-500/30 rounded-2xl p-3 lg:p-4">
+          <div className="text-[9px] lg:text-[11px] font-bold uppercase tracking-wider text-cyan-300 font-mono-label mb-2 text-center lg:text-left">
+            Síguenos y escríbenos
+          </div>
+          <div className="grid grid-cols-3 gap-2 lg:gap-3">
+            <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" className="lp-boton-secundario py-2.5 rounded-xl text-[10px] lg:text-xs font-bold uppercase text-center font-mono-label">
+              📘 Facebook
+            </a>
+            <a href={WA_CORPORATIVO} target="_blank" rel="noopener noreferrer" className="lp-boton-secundario py-2.5 rounded-xl text-[10px] lg:text-xs font-bold uppercase text-center font-mono-label">
+              💬 WhatsApp
+              <span className="block text-[8px] lg:text-[10px] font-normal normal-case text-slate-300">+591 69215158</span>
+            </a>
+            <span className="py-2.5 rounded-xl border border-slate-600/50 text-slate-500 text-[10px] lg:text-xs font-bold uppercase text-center font-mono-label" aria-disabled="true">
+              🎵 TikTok
+              <span className="block text-[8px] lg:text-[10px] font-normal normal-case">Próximamente</span>
+            </span>
+          </div>
+        </section>
+
         {/* Hero + escena 3D */}
         <div className="lg:grid lg:grid-cols-2 lg:gap-10 lg:items-center space-y-6 lg:space-y-0">
           <section className="text-center lg:text-left pt-2 space-y-3 lg:space-y-5">
