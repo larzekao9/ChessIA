@@ -1440,6 +1440,22 @@ window.addEventListener('DOMContentLoaded', () => requestAnimationFrame(() => se
 Cómo llegar · Abrir en Google Maps
 </a>
 </section>
+<style>
+.plans-g{display:grid;gap:14px}
+.plan{position:relative;background:#101b2f;border:1px solid rgba(148,163,184,.22);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.plan-f{border-color:#4c8dff;box-shadow:0 10px 30px rgba(47,111,224,.18)}
+.plan-tag{position:absolute;top:-10px;left:16px;background:#2f6fe0;color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px}
+.plan h3{margin:0;font-size:1.05rem;color:#fff}
+.plan-p{font-size:1.9rem;font-weight:700;color:#fff}.plan-p small{font-size:.8rem;font-weight:400;color:#9aa8bd}
+.plan ul{margin:0;padding:0;list-style:none;display:grid;gap:7px;font-size:13px;color:#c3cddb;flex:1}
+.plan li::before{content:"✓";color:#4c8dff;font-weight:700;margin-right:8px}
+.plan a{display:block;text-align:center;padding:11px;border-radius:10px;background:#2f6fe0;color:#fff!important;font-weight:600;font-size:13px;text-decoration:none}
+.plan a:hover{background:#4c8dff}
+@media(min-width:900px){.plans-g{grid-template-columns:repeat(3,1fr);gap:20px}}
+</style>
+<section class="space-y-3.5" data-purpose="section-plans" id="planes">
+<div class="text-center"><span class="eyebrow">Cursos y planes</span><h2 class="text-xl font-extrabold text-white">Aprende ajedrez con Turing</h2><p class="text-xs text-slate-300 mt-1 max-w-md mx-auto">Elige el plan que se ajusta a tu nivel y paga fácilmente por WhatsApp.</p></div>
+<div class="plans-g"><div class="plan"><h3>Curso Básico</h3><div class="plan-p">Bs 99<small> pago único</small></div><ul><li>Fundamentos y reglas</li><li>Aperturas esenciales</li><li>Ejercicios tácticos guiados</li><li>Acceso por 3 meses</li></ul><a href="https://wa.me/59178576780?text=Hola,%20deseo%20comprar%3A%20Curso%20Básico" target="_blank" rel="noopener noreferrer">Comprar por WhatsApp</a></div><div class="plan plan-f"><span class=plan-tag>Más popular</span><h3>Curso Intermedio</h3><div class="plan-p">Bs 199<small> pago único</small></div><ul><li>Estrategia y finales</li><li>Análisis de partidas con IA</li><li>Práctica contra Turing</li><li>Acceso por 6 meses</li></ul><a href="https://wa.me/59178576780?text=Hola,%20deseo%20comprar%3A%20Curso%20Intermedio" target="_blank" rel="noopener noreferrer">Comprar por WhatsApp</a></div><div class="plan"><h3>Pack Completo</h3><div class="plan-p">Bs 299<small> pago único</small></div><ul><li>Todos los cursos</li><li>Partidas vs. robot Dobot CR5</li><li>Medición de nivel y ELO</li><li>Acceso de por vida</li></ul><a href="https://wa.me/59178576780?text=Hola,%20deseo%20comprar%3A%20Pack%20Completo" target="_blank" rel="noopener noreferrer">Comprar por WhatsApp</a></div></div></section>
 <section class="glass-card p-5 rounded-2xl border-2 border-neonGreen/40 shadow-glow-green space-y-4" data-purpose="registration-form" id="modal-registro">
 <div class="text-center border-b border-white/10 pb-3">
 <span class="text-[9px] font-mono uppercase tracking-widest text-cyan-300 font-bold">HUMANO VS. IA</span>
